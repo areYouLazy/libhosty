@@ -53,7 +53,7 @@ func main() {
 	//
 	// Comment the line with address 12.12.12.12
 	//
-	// By-Row-Line
+	// By-Row-Number
 	idx, _ := hfl.GetHostsFileLineByHostname("second.host.name")
 	hfl.CommentByRow(idx)
 	//
