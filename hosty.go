@@ -134,7 +134,7 @@ func (h *HostsFile) GetHostsFileLineByRow(row int) *HostsFileLine {
 //GetHostsFileLineByAddress returns the index of the line and a ponter to the given HostsFileLine line
 func (h *HostsFile) GetHostsFileLineByAddress(ip net.IP) (int, *HostsFileLine) {
 	for idx := range h.HostsFileLines {
-		if ip.String() == h.HostsFileLines[idx].Address.String() {
+		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
 			return idx, &h.HostsFileLines[idx]
 		}
 	}
@@ -252,7 +252,7 @@ func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine
 		//check if we alredy have the fqdn
 		if idx, addr, err := h.LookupByHostname(hostname); err == nil {
 			//if actual ip is the same as the given one, we are done
-			if addr.String() == ip.String() {
+			if net.IP.Equal(addr, ip) {
 				// handle comment
 				if comment != "" {
 					// just replace the current comment with the new one
@@ -276,7 +276,7 @@ func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine
 
 		//if we alredy have the address, just add the hostname to that line
 		for k, v := range h.HostsFileLines {
-			if v.Address.String() == ip.String() {
+			if net.IP.Equal(v.Address, ip) {
 				h.HostsFileLines[k].Hostnames = append(h.HostsFileLines[k].Hostnames, hostname)
 				// handle comment
 				if comment != "" {
@@ -366,7 +366,7 @@ func (h *HostsFile) CommentByAddress(ip net.IP) {
 	defer h.Unlock()
 
 	for idx, hfl := range h.HostsFileLines {
-		if ip.String() == hfl.Address.String() {
+		if net.IP.Equal(ip, hfl.Address) {
 			h.HostsFileLines[idx].IsCommented = true
 		}
 	}
@@ -416,7 +416,7 @@ func (h *HostsFile) UncommentByAddress(ip net.IP) {
 	defer h.Unlock()
 
 	for idx, hfl := range h.HostsFileLines {
-		if ip.String() == hfl.Address.String() {
+		if net.IP.Equal(ip, hfl.Address) {
 			h.HostsFileLines[idx].IsCommented = false
 		}
 	}
