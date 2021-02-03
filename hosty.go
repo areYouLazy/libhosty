@@ -239,9 +239,6 @@ func (h *HostsFile) LookupByHostname(hostname string) (int, net.IP, error) {
 // it returns the index of the edited (created) line and a pointer to the hostsfileline object.
 // error is not nil if something goes wrong
 func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine, error) {
-	h.Lock()
-	defer h.Unlock()
-
 	// hostname to lowercase
 	hostname := strings.ToLower(fqdnRaw)
 	// parse ip to net.IP
@@ -265,7 +262,9 @@ func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine
 			for hostIdx, fqdn := range h.HostsFileLines[idx].Hostnames {
 				if fqdn == hostname {
 					if len(h.HostsFileLines[idx].Hostnames) > 1 {
+						h.Lock()
 						h.HostsFileLines[idx].Hostnames = append(h.HostsFileLines[idx].Hostnames[:hostIdx], h.HostsFileLines[idx].Hostnames[hostIdx+1:]...)
+						h.Unlock()
 					}
 
 					//remove the line if there are no more hostnames (other than the actual one)
@@ -279,12 +278,17 @@ func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine
 		//if we alredy have the address, just add the hostname to that line
 		for k, v := range h.HostsFileLines {
 			if net.IP.Equal(v.Address, ip) {
+				h.Lock()
 				h.HostsFileLines[k].Hostnames = append(h.HostsFileLines[k].Hostnames, hostname)
+				h.Unlock()
+
 				// handle comment
 				if comment != "" {
 					// just replace the current comment with the new one
 					h.HostsFileLines[k].Comment = comment
 				}
+
+				// return edited entry
 				return k, &h.HostsFileLines[k], nil
 			}
 		}
@@ -298,13 +302,20 @@ func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine
 			IsCommented: false,
 		}
 
+		// generate raw version of the line
 		hfl.Raw = lineFormatter(hfl)
 
+		// append to hosts
 		h.HostsFileLines = append(h.HostsFileLines, hfl)
+
+		// get index
 		idx := len(h.HostsFileLines) - 1
+
+		// return created entry
 		return idx, &h.HostsFileLines[idx], nil
 	}
 
+	// return error
 	return -1, nil, fmt.Errorf("Cannot parse IP address %s", ipRaw)
 }
 
