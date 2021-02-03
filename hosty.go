@@ -264,10 +264,12 @@ func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine
 			//if address is different, we need to remove the hostname from the previous entry
 			for hostIdx, fqdn := range h.HostsFileLines[idx].Hostnames {
 				if fqdn == hostname {
-					h.HostsFileLines[idx].Hostnames = append(h.HostsFileLines[idx].Hostnames[:hostIdx], h.HostsFileLines[idx].Hostnames[hostIdx+1:]...)
+					if len h.HostsFileLines[idx].Hostnames > 1 {
+						h.HostsFileLines[idx].Hostnames = append(h.HostsFileLines[idx].Hostnames[:hostIdx], h.HostsFileLines[idx].Hostnames[hostIdx+1:]...)
+					}
 
-					//also remove the line if there are no more hostnames
-					if len(h.HostsFileLines[idx].Hostnames) < 1 {
+					//remove the line if there are no more hostnames (other than the actual one)
+					if len(h.HostsFileLines[idx].Hostnames) <= 1 {
 						h.RemoveRow(idx)
 					}
 				}
