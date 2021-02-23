@@ -79,7 +79,7 @@ type HostsFile struct {
 //Init returns a new instance of a hostsfile.
 // Init gets the default Hosts configuratin and allocate
 // an empty slice of HostsFileLine objects to store the parsed hosts file
-func Init() *HostsFile {
+func Init() (*HostsFile, error) {
 	var err error
 
 	// allocate a new HostsFile object
@@ -94,11 +94,11 @@ func Init() *HostsFile {
 	// parse the hosts file and load file lines
 	hf.HostsFileLines, err = ParseHostsFile(hf.Config.FilePath)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	//return HostsFile
-	return hf
+	return hf, nil
 }
 
 // initHostsConfig loads hosts file based on environment.
