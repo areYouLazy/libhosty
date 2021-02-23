@@ -76,8 +76,7 @@ type HostsFile struct {
 }
 
 //Init returns a new instance of a hostsfile.
-// Init gets the default Hosts configuratin and allocate
-// an empty slice of HostsFileLine objects to store the parsed hosts file
+// Init takes a HostsConfig object or nil to use the default one
 func Init(conf *HostsConfig) (*HostsFile, error) {
 	var config *HostsConfig
 	var err error
@@ -86,7 +85,7 @@ func Init(conf *HostsConfig) (*HostsFile, error) {
 		config = conf
 	} else {
 		// initialize hostsConfig
-		config, err = InitHostsConfig("")
+		config, err = NewHostsConfig("")
 		if err != nil {
 			return nil, err
 		}
@@ -111,10 +110,10 @@ func Init(conf *HostsConfig) (*HostsFile, error) {
 	return hf, nil
 }
 
-//InitHostsConfig loads hosts file based on environment.
+//NewHostsConfig loads hosts file based on environment.
 // initHostsConfig initializa the default file path based
 // on the OS or from a given location
-func InitHostsConfig(path string) (*HostsConfig, error) {
+func NewHostsConfig(path string) (*HostsConfig, error) {
 	// allocate hostsConfig
 	var hc *HostsConfig
 

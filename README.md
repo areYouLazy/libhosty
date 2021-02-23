@@ -19,7 +19,7 @@ and pull the library
 ## Usage
 To use the library, just import it and call the `Init()` method.
 
-To load a custom hosts file use the `InitHostsConfig` method to get a custom HostsConfig
+To load a custom hosts file use the `NewHostsConfig` method to get a custom HostsConfig
 object to pass to the `Init()` method
 
 Note: This code doesn't handle errors for readability purposes, but you SHOULD!
