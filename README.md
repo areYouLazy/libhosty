@@ -17,7 +17,10 @@ and pull the library
 ```
 
 ## Usage
-To use the library, just import it and call the Init() method. The library is designed to automatically panic if it is not able to initialize.
+To use the library, just import it and call the `Init()` method.
+
+To load a custom hosts file use the `InitHostsConfig` method to get a custom HostsConfig
+object to pass to the `Init()` method
 
 Note: This code doesn't handle errors for readability purposes, but you SHOULD!
 
@@ -28,7 +31,7 @@ import "github.com/areYouLazy/libhosty"
 
 func main() {
 	//initialize libhosty
-	hfl := libhosty.Init()
+	hfl, _ := libhosty.Init(nil)
 
 	//add an empty line
 	hfl.AddEmpty()

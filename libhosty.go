@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
-	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -79,13 +78,24 @@ type HostsFile struct {
 //Init returns a new instance of a hostsfile.
 // Init gets the default Hosts configuratin and allocate
 // an empty slice of HostsFileLine objects to store the parsed hosts file
-func Init() (*HostsFile, error) {
+func Init(conf *HostsConfig) (*HostsFile, error) {
+	var config *HostsConfig
 	var err error
+
+	if conf != nil {
+		config = conf
+	} else {
+		// initialize hostsConfig
+		config, err = InitHostsConfig("")
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	// allocate a new HostsFile object
 	hf := &HostsFile{
 		// use default configuration
-		Config: initHostsConfig(),
+		Config: config,
 
 		// allocate a new slice of HostsFileLine objects
 		HostsFileLines: make([]HostsFileLine, 0),
@@ -101,29 +111,39 @@ func Init() (*HostsFile, error) {
 	return hf, nil
 }
 
-// initHostsConfig loads hosts file based on environment.
+//InitHostsConfig loads hosts file based on environment.
 // initHostsConfig initializa the default file path based
-// on the OS since the location file cannot be changed
-func initHostsConfig() *HostsConfig {
+// on the OS or from a given location
+func InitHostsConfig(path string) (*HostsConfig, error) {
+	// allocate hostsConfig
 	var hc *HostsConfig
-	if runtime.GOOS == "windows" {
+
+	// TODO ensure path exists and is a file (not a dir)
+
+	if len(path) > 0 {
 		hc = &HostsConfig{
-			FilePath: windowsFilePath + hostsFileName,
-		}
-	} else if runtime.GOOS == "linux" {
-		hc = &HostsConfig{
-			FilePath: unixFilePath + hostsFileName,
-		}
-	} else if runtime.GOOS == "darwin" {
-		hc = &HostsConfig{
-			FilePath: unixFilePath + hostsFileName,
+			FilePath: path,
 		}
 	} else {
-		fmt.Printf("Unrecognized os: %s", runtime.GOOS)
-		os.Exit(1)
+		// check OS to load the correct hostsFile location
+		if runtime.GOOS == "windows" {
+			hc = &HostsConfig{
+				FilePath: windowsFilePath + hostsFileName,
+			}
+		} else if runtime.GOOS == "linux" {
+			hc = &HostsConfig{
+				FilePath: unixFilePath + hostsFileName,
+			}
+		} else if runtime.GOOS == "darwin" {
+			hc = &HostsConfig{
+				FilePath: unixFilePath + hostsFileName,
+			}
+		} else {
+			return nil, fmt.Errorf("Unrecognized OS: %s", runtime.GOOS)
+		}
 	}
 
-	return hc
+	return hc, nil
 }
 
 //GetHostsFileLineByRow returns a ponter to the given HostsFileLine row
