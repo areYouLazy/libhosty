@@ -198,9 +198,9 @@ func (h *HostsFile) RenderHostsFile() string {
 //RenderHostsFileLine render and returns the given hosts line with the lineFormatter() routine
 func (h *HostsFile) RenderHostsFileLine(row int) string {
 	// iterate to find the row to render
-	for k, l := range h.HostsFileLines {
-		if k == row {
-			return lineFormatter(l)
+	for idx, hfl := range h.HostsFileLines {
+		if idx == row {
+			return lineFormatter(hfl)
 		}
 	}
 
@@ -243,10 +243,10 @@ func (h *HostsFile) RemoveRow(row int) {
 // if yes, it returns the index of the address and the associated address.
 // error is not nil if something goes wrong
 func (h *HostsFile) LookupByHostname(hostname string) (int, net.IP, error) {
-	for i, v := range h.HostsFileLines {
-		for _, k := range v.Hostnames {
-			if k == hostname {
-				return i, h.HostsFileLines[i].Address, nil
+	for idx, hfl := range h.HostsFileLines {
+		for _, hn := range hfl.Hostnames {
+			if hn == hostname {
+				return idx, h.HostsFileLines[idx].Address, nil
 			}
 		}
 	}
@@ -278,8 +278,8 @@ func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine
 			}
 
 			//if address is different, we need to remove the hostname from the previous entry
-			for hostIdx, fqdn := range h.HostsFileLines[idx].Hostnames {
-				if fqdn == hostname {
+			for hostIdx, hn := range h.HostsFileLines[idx].Hostnames {
+				if hn == hostname {
 					if len(h.HostsFileLines[idx].Hostnames) > 1 {
 						h.Lock()
 						h.HostsFileLines[idx].Hostnames = append(h.HostsFileLines[idx].Hostnames[:hostIdx], h.HostsFileLines[idx].Hostnames[hostIdx+1:]...)
@@ -295,20 +295,20 @@ func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine
 		}
 
 		//if we alredy have the address, just add the hostname to that line
-		for k, v := range h.HostsFileLines {
-			if net.IP.Equal(v.Address, ip) {
+		for idx, hfl := range h.HostsFileLines {
+			if net.IP.Equal(hfl.Address, ip) {
 				h.Lock()
-				h.HostsFileLines[k].Hostnames = append(h.HostsFileLines[k].Hostnames, hostname)
+				h.HostsFileLines[idx].Hostnames = append(h.HostsFileLines[idx].Hostnames, hostname)
 				h.Unlock()
 
 				// handle comment
 				if comment != "" {
 					// just replace the current comment with the new one
-					h.HostsFileLines[k].Comment = comment
+					h.HostsFileLines[idx].Comment = comment
 				}
 
 				// return edited entry
-				return k, &h.HostsFileLines[k], nil
+				return idx, &h.HostsFileLines[idx], nil
 			}
 		}
 
