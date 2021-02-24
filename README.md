@@ -1,5 +1,5 @@
 # libhosty
-libhosty is a pure golang library to manage the hosts file. It is inspired by [txeh](https://github.com/txn2/txeh), with some enrichments:
+libhosty is a pure golang library to manipulate the hosts file. It is inspired by [txeh](https://github.com/txn2/txeh), with some enrichments:
 - Ability to Comment/Uncomment a host line without removing it from the file
 - Ability to restore the default hosts file for the 3 major OS (windows, linux, darwin)
 - Ability to add Comment lines
@@ -64,11 +64,11 @@ func main() {
 	hfl.CommentByHostname("second.host.name")
 	//
 	// By-Address-As-IP
-	address := net.ParseIP("12.12.12.12")
-	hfl.CommentByAddress(address)
+	ip := net.ParseIP("12.12.12.12")
+	hfl.CommentByIP(ip)
 	//
 	// By-Address-As-String
-	hfl.CommentByAddressAsString("12.12.12.12")
+	hfl.CommentByAddress("12.12.12.12")
 
 	// render the hosts file
 	fmt.Println(hfl.RenderHostsFile())

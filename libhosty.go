@@ -1,3 +1,4 @@
+//Package libhosty is a pure golang library to manipulate the hosts file
 package libhosty
 
 import (
@@ -150,8 +151,8 @@ func (h *HostsFile) GetHostsFileLineByRow(row int) *HostsFileLine {
 	return &h.HostsFileLines[row]
 }
 
-//GetHostsFileLineByAddress returns the index of the line and a ponter to the given HostsFileLine line
-func (h *HostsFile) GetHostsFileLineByAddress(ip net.IP) (int, *HostsFileLine) {
+//GetHostsFileLineByIP returns the index of the line and a ponter to the given HostsFileLine line
+func (h *HostsFile) GetHostsFileLineByIP(ip net.IP) (int, *HostsFileLine) {
 	for idx := range h.HostsFileLines {
 		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
 			return idx, &h.HostsFileLines[idx]
@@ -161,10 +162,10 @@ func (h *HostsFile) GetHostsFileLineByAddress(ip net.IP) (int, *HostsFileLine) {
 	return -1, nil
 }
 
-//GetHostsFileLineByAddressAsString returns the index of the line and a ponter to the given HostsFileLine line
-func (h *HostsFile) GetHostsFileLineByAddressAsString(address string) (int, *HostsFileLine) {
+//GetHostsFileLineByAddress returns the index of the line and a ponter to the given HostsFileLine line
+func (h *HostsFile) GetHostsFileLineByAddress(address string) (int, *HostsFileLine) {
 	ip := net.ParseIP(address)
-	return h.GetHostsFileLineByAddress(ip)
+	return h.GetHostsFileLineByIP(ip)
 }
 
 //GetHostsFileLineByHostname returns the index of the line and a ponter to the given HostsFileLine line
@@ -252,6 +253,40 @@ func (h *HostsFile) LookupByHostname(hostname string) (int, net.IP, error) {
 	}
 
 	return -1, nil, errors.New("Hostname not found")
+}
+
+//AddHostRaw add the given ip/fqdn/comment pair
+// this is different from AddHost because it does not take care of duplicates
+// this just append the new entry to the hosts file
+func (h *HostsFile) AddHostRaw(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine, error) {
+	// hostname to lowercase
+	hostname := strings.ToLower(fqdnRaw)
+	// parse ip to net.IP
+	ip := net.ParseIP(ipRaw)
+
+	// if we have a valid IP
+	if ip != nil {
+		// create a new hosts line
+		hfl := HostsFileLine{
+			LineType:    ADDRESS,
+			Address:     ip,
+			Hostnames:   []string{hostname},
+			Comment:     comment,
+			IsCommented: false,
+		}
+
+		// append to hosts
+		h.HostsFileLines = append(h.HostsFileLines, hfl)
+
+		// get index
+		idx := len(h.HostsFileLines) - 1
+
+		// return created entry
+		return idx, &h.HostsFileLines[idx], nil
+	}
+
+	// return error
+	return -1, nil, fmt.Errorf("Cannot parse IP address %s", ipRaw)
 }
 
 //AddHost add the given ip/fqdn/comment pair, cleanup is done for previous entry.
@@ -392,8 +427,8 @@ func (h *HostsFile) CommentByRow(row int) {
 	return
 }
 
-//CommentByAddress set the IsCommented bit for the given address to true
-func (h *HostsFile) CommentByAddress(ip net.IP) {
+//CommentByIP set the IsCommented bit for the given address to true
+func (h *HostsFile) CommentByIP(ip net.IP) {
 	h.Lock()
 	defer h.Unlock()
 
@@ -404,11 +439,11 @@ func (h *HostsFile) CommentByAddress(ip net.IP) {
 	}
 }
 
-//CommentByAddressAsString set the IsCommented bit for the given address as string to false
-func (h *HostsFile) CommentByAddressAsString(address string) {
+//CommentByAddress set the IsCommented bit for the given address as string to false
+func (h *HostsFile) CommentByAddress(address string) {
 	ip := net.ParseIP(address)
 
-	h.CommentByAddress(ip)
+	h.CommentByIP(ip)
 }
 
 //CommentByHostname set the IsCommented bit for the given hostname to true
@@ -442,8 +477,8 @@ func (h *HostsFile) UncommentByRow(row int) {
 	return
 }
 
-//UncommentByAddress set the IsCommented bit for the given address to false
-func (h *HostsFile) UncommentByAddress(ip net.IP) {
+//UncommentByIP set the IsCommented bit for the given address to false
+func (h *HostsFile) UncommentByIP(ip net.IP) {
 	h.Lock()
 	defer h.Unlock()
 
@@ -454,11 +489,11 @@ func (h *HostsFile) UncommentByAddress(ip net.IP) {
 	}
 }
 
-//UncommentByAddressAsString set the IsCommented bit for the given address as string to false
-func (h *HostsFile) UncommentByAddressAsString(address string) {
+//UncommentByAddress set the IsCommented bit for the given address as string to false
+func (h *HostsFile) UncommentByAddress(address string) {
 	ip := net.ParseIP(address)
 
-	h.UncommentByAddress(ip)
+	h.UncommentByIP(ip)
 }
 
 //UncommentByHostname set the IsCommented bit for the given hostname to false
