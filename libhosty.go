@@ -111,8 +111,8 @@ func Init(conf *HostsConfig) (*HostsFile, error) {
 }
 
 //NewHostsConfig loads hosts file based on environment.
-// initHostsConfig initializa the default file path based
-// on the OS or from a given location
+// NewHostsConfig initialize the default file path based
+// on the OS or from a given location if a custom path is provided
 func NewHostsConfig(path string) (*HostsConfig, error) {
 	// allocate hostsConfig
 	var hc *HostsConfig
