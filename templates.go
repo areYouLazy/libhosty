@@ -43,3 +43,10 @@ const darwinHostsTemplate = `##
 ::1                 localhost
 fe80::1%lo0         localhost
 `
+
+// dockerDesktopTemplate defines docker desktop hosts entry
+const dockerDesktopTemplate = `# Added by Docker Desktop
+# To allow the same kube context to work on the host and the container:
+127.0.0.1 kubernetes.docker.internal
+# End of section
+`

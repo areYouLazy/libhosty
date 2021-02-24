@@ -1,3 +1,4 @@
+//Package libhosty is a pure golang library to manipulate the hosts file
 package libhosty
 
 import (
@@ -5,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
-	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -77,15 +77,25 @@ type HostsFile struct {
 }
 
 //Init returns a new instance of a hostsfile.
-// Init gets the default Hosts configuratin and allocate
-// an empty slice of HostsFileLine objects to store the parsed hosts file
-func Init() *HostsFile {
+// Init takes a HostsConfig object or nil to use the default one
+func Init(conf *HostsConfig) (*HostsFile, error) {
+	var config *HostsConfig
 	var err error
+
+	if conf != nil {
+		config = conf
+	} else {
+		// initialize hostsConfig
+		config, err = NewHostsConfig("")
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	// allocate a new HostsFile object
 	hf := &HostsFile{
 		// use default configuration
-		Config: initHostsConfig(),
+		Config: config,
 
 		// allocate a new slice of HostsFileLine objects
 		HostsFileLines: make([]HostsFileLine, 0),
@@ -94,36 +104,46 @@ func Init() *HostsFile {
 	// parse the hosts file and load file lines
 	hf.HostsFileLines, err = ParseHostsFile(hf.Config.FilePath)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	//return HostsFile
-	return hf
+	return hf, nil
 }
 
-// initHostsConfig loads hosts file based on environment.
-// initHostsConfig initializa the default file path based
-// on the OS since the location file cannot be changed
-func initHostsConfig() *HostsConfig {
+//NewHostsConfig loads hosts file based on environment.
+// NewHostsConfig initialize the default file path based
+// on the OS or from a given location if a custom path is provided
+func NewHostsConfig(path string) (*HostsConfig, error) {
+	// allocate hostsConfig
 	var hc *HostsConfig
-	if runtime.GOOS == "windows" {
+
+	// TODO ensure path exists and is a file (not a dir)
+
+	if len(path) > 0 {
 		hc = &HostsConfig{
-			FilePath: windowsFilePath + hostsFileName,
-		}
-	} else if runtime.GOOS == "linux" {
-		hc = &HostsConfig{
-			FilePath: unixFilePath + hostsFileName,
-		}
-	} else if runtime.GOOS == "darwin" {
-		hc = &HostsConfig{
-			FilePath: unixFilePath + hostsFileName,
+			FilePath: path,
 		}
 	} else {
-		fmt.Printf("Unrecognized os: %s", runtime.GOOS)
-		os.Exit(1)
+		// check OS to load the correct hostsFile location
+		if runtime.GOOS == "windows" {
+			hc = &HostsConfig{
+				FilePath: windowsFilePath + hostsFileName,
+			}
+		} else if runtime.GOOS == "linux" {
+			hc = &HostsConfig{
+				FilePath: unixFilePath + hostsFileName,
+			}
+		} else if runtime.GOOS == "darwin" {
+			hc = &HostsConfig{
+				FilePath: unixFilePath + hostsFileName,
+			}
+		} else {
+			return nil, fmt.Errorf("Unrecognized OS: %s", runtime.GOOS)
+		}
 	}
 
-	return hc
+	return hc, nil
 }
 
 //GetHostsFileLineByRow returns a ponter to the given HostsFileLine row
@@ -131,8 +151,8 @@ func (h *HostsFile) GetHostsFileLineByRow(row int) *HostsFileLine {
 	return &h.HostsFileLines[row]
 }
 
-//GetHostsFileLineByAddress returns the index of the line and a ponter to the given HostsFileLine line
-func (h *HostsFile) GetHostsFileLineByAddress(ip net.IP) (int, *HostsFileLine) {
+//GetHostsFileLineByIP returns the index of the line and a ponter to the given HostsFileLine line
+func (h *HostsFile) GetHostsFileLineByIP(ip net.IP) (int, *HostsFileLine) {
 	for idx := range h.HostsFileLines {
 		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
 			return idx, &h.HostsFileLines[idx]
@@ -142,10 +162,10 @@ func (h *HostsFile) GetHostsFileLineByAddress(ip net.IP) (int, *HostsFileLine) {
 	return -1, nil
 }
 
-//GetHostsFileLineByAddressAsString returns the index of the line and a ponter to the given HostsFileLine line
-func (h *HostsFile) GetHostsFileLineByAddressAsString(address string) (int, *HostsFileLine) {
+//GetHostsFileLineByAddress returns the index of the line and a ponter to the given HostsFileLine line
+func (h *HostsFile) GetHostsFileLineByAddress(address string) (int, *HostsFileLine) {
 	ip := net.ParseIP(address)
-	return h.GetHostsFileLineByAddress(ip)
+	return h.GetHostsFileLineByIP(ip)
 }
 
 //GetHostsFileLineByHostname returns the index of the line and a ponter to the given HostsFileLine line
@@ -179,9 +199,9 @@ func (h *HostsFile) RenderHostsFile() string {
 //RenderHostsFileLine render and returns the given hosts line with the lineFormatter() routine
 func (h *HostsFile) RenderHostsFileLine(row int) string {
 	// iterate to find the row to render
-	for k, l := range h.HostsFileLines {
-		if k == row {
-			return lineFormatter(l)
+	for idx, hfl := range h.HostsFileLines {
+		if idx == row {
+			return lineFormatter(hfl)
 		}
 	}
 
@@ -224,15 +244,49 @@ func (h *HostsFile) RemoveRow(row int) {
 // if yes, it returns the index of the address and the associated address.
 // error is not nil if something goes wrong
 func (h *HostsFile) LookupByHostname(hostname string) (int, net.IP, error) {
-	for i, v := range h.HostsFileLines {
-		for _, k := range v.Hostnames {
-			if k == hostname {
-				return i, h.HostsFileLines[i].Address, nil
+	for idx, hfl := range h.HostsFileLines {
+		for _, hn := range hfl.Hostnames {
+			if hn == hostname {
+				return idx, h.HostsFileLines[idx].Address, nil
 			}
 		}
 	}
 
 	return -1, nil, errors.New("Hostname not found")
+}
+
+//AddHostRaw add the given ip/fqdn/comment pair
+// this is different from AddHost because it does not take care of duplicates
+// this just append the new entry to the hosts file
+func (h *HostsFile) AddHostRaw(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine, error) {
+	// hostname to lowercase
+	hostname := strings.ToLower(fqdnRaw)
+	// parse ip to net.IP
+	ip := net.ParseIP(ipRaw)
+
+	// if we have a valid IP
+	if ip != nil {
+		// create a new hosts line
+		hfl := HostsFileLine{
+			LineType:    ADDRESS,
+			Address:     ip,
+			Hostnames:   []string{hostname},
+			Comment:     comment,
+			IsCommented: false,
+		}
+
+		// append to hosts
+		h.HostsFileLines = append(h.HostsFileLines, hfl)
+
+		// get index
+		idx := len(h.HostsFileLines) - 1
+
+		// return created entry
+		return idx, &h.HostsFileLines[idx], nil
+	}
+
+	// return error
+	return -1, nil, fmt.Errorf("Cannot parse IP address %s", ipRaw)
 }
 
 //AddHost add the given ip/fqdn/comment pair, cleanup is done for previous entry.
@@ -259,8 +313,8 @@ func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine
 			}
 
 			//if address is different, we need to remove the hostname from the previous entry
-			for hostIdx, fqdn := range h.HostsFileLines[idx].Hostnames {
-				if fqdn == hostname {
+			for hostIdx, hn := range h.HostsFileLines[idx].Hostnames {
+				if hn == hostname {
 					if len(h.HostsFileLines[idx].Hostnames) > 1 {
 						h.Lock()
 						h.HostsFileLines[idx].Hostnames = append(h.HostsFileLines[idx].Hostnames[:hostIdx], h.HostsFileLines[idx].Hostnames[hostIdx+1:]...)
@@ -276,20 +330,20 @@ func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine
 		}
 
 		//if we alredy have the address, just add the hostname to that line
-		for k, v := range h.HostsFileLines {
-			if net.IP.Equal(v.Address, ip) {
+		for idx, hfl := range h.HostsFileLines {
+			if net.IP.Equal(hfl.Address, ip) {
 				h.Lock()
-				h.HostsFileLines[k].Hostnames = append(h.HostsFileLines[k].Hostnames, hostname)
+				h.HostsFileLines[idx].Hostnames = append(h.HostsFileLines[idx].Hostnames, hostname)
 				h.Unlock()
 
 				// handle comment
 				if comment != "" {
 					// just replace the current comment with the new one
-					h.HostsFileLines[k].Comment = comment
+					h.HostsFileLines[idx].Comment = comment
 				}
 
 				// return edited entry
-				return k, &h.HostsFileLines[k], nil
+				return idx, &h.HostsFileLines[idx], nil
 			}
 		}
 
@@ -373,8 +427,8 @@ func (h *HostsFile) CommentByRow(row int) {
 	return
 }
 
-//CommentByAddress set the IsCommented bit for the given address to true
-func (h *HostsFile) CommentByAddress(ip net.IP) {
+//CommentByIP set the IsCommented bit for the given address to true
+func (h *HostsFile) CommentByIP(ip net.IP) {
 	h.Lock()
 	defer h.Unlock()
 
@@ -385,11 +439,11 @@ func (h *HostsFile) CommentByAddress(ip net.IP) {
 	}
 }
 
-//CommentByAddressAsString set the IsCommented bit for the given address as string to false
-func (h *HostsFile) CommentByAddressAsString(address string) {
+//CommentByAddress set the IsCommented bit for the given address as string to false
+func (h *HostsFile) CommentByAddress(address string) {
 	ip := net.ParseIP(address)
 
-	h.CommentByAddress(ip)
+	h.CommentByIP(ip)
 }
 
 //CommentByHostname set the IsCommented bit for the given hostname to true
@@ -423,8 +477,8 @@ func (h *HostsFile) UncommentByRow(row int) {
 	return
 }
 
-//UncommentByAddress set the IsCommented bit for the given address to false
-func (h *HostsFile) UncommentByAddress(ip net.IP) {
+//UncommentByIP set the IsCommented bit for the given address to false
+func (h *HostsFile) UncommentByIP(ip net.IP) {
 	h.Lock()
 	defer h.Unlock()
 
@@ -435,11 +489,11 @@ func (h *HostsFile) UncommentByAddress(ip net.IP) {
 	}
 }
 
-//UncommentByAddressAsString set the IsCommented bit for the given address as string to false
-func (h *HostsFile) UncommentByAddressAsString(address string) {
+//UncommentByAddress set the IsCommented bit for the given address as string to false
+func (h *HostsFile) UncommentByAddress(address string) {
 	ip := net.ParseIP(address)
 
-	h.UncommentByAddress(ip)
+	h.UncommentByIP(ip)
 }
 
 //UncommentByHostname set the IsCommented bit for the given hostname to false
@@ -454,22 +508,4 @@ func (h *HostsFile) UncommentByHostname(hostname string) {
 			}
 		}
 	}
-}
-
-//RestoreDefaultWindowsHostsFile loads the default windows hosts file
-func (h *HostsFile) RestoreDefaultWindowsHostsFile() {
-	hfl, _ := ParseHostsFileAsString(windowsHostsTemplate)
-	h.HostsFileLines = hfl
-}
-
-//RestoreDefaultLinuxHostsFile loads the default linux hosts file
-func (h *HostsFile) RestoreDefaultLinuxHostsFile() {
-	hfl, _ := ParseHostsFileAsString(linuxHostsTemplate)
-	h.HostsFileLines = hfl
-}
-
-//RestoreDefaultDarwinHostsFile loads the default darwin hosts file
-func (h *HostsFile) RestoreDefaultDarwinHostsFile() {
-	hfl, _ := ParseHostsFileAsString(darwinHostsTemplate)
-	h.HostsFileLines = hfl
 }
