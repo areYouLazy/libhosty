@@ -12,6 +12,9 @@ import (
 )
 
 const (
+	//Version exposes library version
+	Version = "1.1"
+
 	//UNKNOWN defines unknown line type
 	UNKNOWN = 0
 	//EMPTY defines empty line type
