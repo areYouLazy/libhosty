@@ -50,7 +50,7 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 			// so remove the 1st char (#), trim spaces
 			// and try to parse the line as a host line
 			noCommentLine := strings.TrimPrefix(curLine.Trimed, "#")
-			tmpParts := strings.Split(strings.TrimSpace(noCommentLine), " ")
+			tmpParts := strings.Fields(strings.TrimSpace(noCommentLine))
 			address := net.ParseIP(tmpParts[0])
 
 			// if address is nil this line is definetly a comment

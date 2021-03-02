@@ -13,7 +13,7 @@ import (
 
 const (
 	//Version exposes library version
-	Version = "1.1"
+	Version = "v1.2"
 
 	//UNKNOWN defines unknown line type
 	UNKNOWN = 0
