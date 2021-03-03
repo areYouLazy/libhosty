@@ -2,10 +2,10 @@
 package libhosty
 
 import (
-	"errors"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"net"
+	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -30,6 +30,9 @@ const (
 	unixFilePath = "/etc/"
 	// defines default filename
 	hostsFileName = "hosts"
+
+	// defines environment variable for hosts file
+	envHostsFile = "HOSTYHOSTSFILE"
 )
 
 //HostsConfig defines parameters to find hosts file.
@@ -128,6 +131,32 @@ func NewHostsConfig(path string) (*HostsConfig, error) {
 			FilePath: path,
 		}
 	} else {
+		switch runtime.GOOS {
+		case "windows":
+			hc = &HostsConfig{
+				FilePath: windowsFilePath + hostsFileName,
+			}
+		case "linux":
+			hc = &HostsConfig{
+				FilePath: unixFilePath + hostsFileName,
+			}
+		case "darwin":
+			hc = &HostsConfig{
+				FilePath: unixFilePath + hostsFileName,
+			}
+		default:
+			hc = &HostsConfig{
+				FilePath: unixFilePath + hostsFileName,
+			}
+			p := os.Getenv(envHostsFile)
+			if p != "" {
+				hc.FilePath = p
+			} else {
+				log.Printf("Unable to recognize OS %s, using default linux location %s", runtime.GOOS, hc.FilePath)
+				log.Printf("Use %s environment variable to change the file location", envHostsFile)
+			}
+		}
+
 		// check OS to load the correct hostsFile location
 		if runtime.GOOS == "windows" {
 			hc = &HostsConfig{
@@ -142,7 +171,7 @@ func NewHostsConfig(path string) (*HostsConfig, error) {
 				FilePath: unixFilePath + hostsFileName,
 			}
 		} else {
-			return nil, fmt.Errorf("Unrecognized OS: %s", runtime.GOOS)
+			return nil, ErrUnrecognizedOS(runtime.GOOS)
 		}
 	}
 
@@ -255,7 +284,7 @@ func (h *HostsFile) LookupByHostname(hostname string) (int, net.IP, error) {
 		}
 	}
 
-	return -1, nil, errors.New("Hostname not found")
+	return -1, nil, ErrHostnameNotFound
 }
 
 //AddHostRaw add the given ip/fqdn/comment pair
@@ -289,7 +318,7 @@ func (h *HostsFile) AddHostRaw(ipRaw, fqdnRaw, comment string) (int, *HostsFileL
 	}
 
 	// return error
-	return -1, nil, fmt.Errorf("Cannot parse IP address %s", ipRaw)
+	return -1, nil, ErrCannotParseIPAddress(ipRaw)
 }
 
 //AddHost add the given ip/fqdn/comment pair, cleanup is done for previous entry.
@@ -373,7 +402,7 @@ func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine
 	}
 
 	// return error
-	return -1, nil, fmt.Errorf("Cannot parse IP address %s", ipRaw)
+	return -1, nil, ErrCannotParseIPAddress(ipRaw)
 }
 
 //AddComment adds a new line of type comment with the given comment.

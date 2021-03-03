@@ -1,6 +1,9 @@
 package libhosty
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 //ErrNotAnAddressLine used when operating on a non-address line for operation
 // related to address lines, such as comment/uncomment
@@ -23,3 +26,13 @@ var ErrHostnameNotFound = errors.New("Cannot find a line with given hostname")
 
 //ErrUnknown used when we don't know what's happened
 var ErrUnknown = errors.New("Unknown error")
+
+//ErrCannotParseIPAddress used when unable to parse given ip address
+func ErrCannotParseIPAddress(ip string) error {
+	return fmt.Errorf("Cannot parse IP Address: %s", ip)
+}
+
+//ErrUnrecognizedOS used when unable to recognize OS
+func ErrUnrecognizedOS(os string) error {
+	return fmt.Errorf("Unrecognized OS: %s", os)
+}
