@@ -2,10 +2,10 @@
 package libhosty
 
 import (
-	"errors"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"net"
+	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -13,7 +13,7 @@ import (
 
 const (
 	//Version exposes library version
-	Version = "v1.3"
+	Version = "v1.4"
 
 	//UNKNOWN defines unknown line type
 	UNKNOWN = 0
@@ -30,6 +30,9 @@ const (
 	unixFilePath = "/etc/"
 	// defines default filename
 	hostsFileName = "hosts"
+
+	// defines environment variable for hosts file
+	envHostsFile = "HOSTYHOSTSFILE"
 )
 
 //HostsConfig defines parameters to find hosts file.
@@ -128,6 +131,32 @@ func NewHostsConfig(path string) (*HostsConfig, error) {
 			FilePath: path,
 		}
 	} else {
+		switch runtime.GOOS {
+		case "windows":
+			hc = &HostsConfig{
+				FilePath: windowsFilePath + hostsFileName,
+			}
+		case "linux":
+			hc = &HostsConfig{
+				FilePath: unixFilePath + hostsFileName,
+			}
+		case "darwin":
+			hc = &HostsConfig{
+				FilePath: unixFilePath + hostsFileName,
+			}
+		default:
+			hc = &HostsConfig{
+				FilePath: unixFilePath + hostsFileName,
+			}
+			p := os.Getenv(envHostsFile)
+			if p != "" {
+				hc.FilePath = p
+			} else {
+				log.Printf("Unable to recognize OS %s, using default linux location %s", runtime.GOOS, hc.FilePath)
+				log.Printf("Use %s environment variable to change the file location", envHostsFile)
+			}
+		}
+
 		// check OS to load the correct hostsFile location
 		if runtime.GOOS == "windows" {
 			hc = &HostsConfig{
@@ -142,7 +171,7 @@ func NewHostsConfig(path string) (*HostsConfig, error) {
 				FilePath: unixFilePath + hostsFileName,
 			}
 		} else {
-			return nil, fmt.Errorf("Unrecognized OS: %s", runtime.GOOS)
+			return nil, ErrUnrecognizedOS(runtime.GOOS)
 		}
 	}
 
@@ -255,7 +284,7 @@ func (h *HostsFile) LookupByHostname(hostname string) (int, net.IP, error) {
 		}
 	}
 
-	return -1, nil, errors.New("Hostname not found")
+	return -1, nil, ErrHostnameNotFound
 }
 
 //AddHostRaw add the given ip/fqdn/comment pair
@@ -289,7 +318,7 @@ func (h *HostsFile) AddHostRaw(ipRaw, fqdnRaw, comment string) (int, *HostsFileL
 	}
 
 	// return error
-	return -1, nil, fmt.Errorf("Cannot parse IP address %s", ipRaw)
+	return -1, nil, ErrCannotParseIPAddress(ipRaw)
 }
 
 //AddHost add the given ip/fqdn/comment pair, cleanup is done for previous entry.
@@ -373,7 +402,7 @@ func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine
 	}
 
 	// return error
-	return -1, nil, fmt.Errorf("Cannot parse IP address %s", ipRaw)
+	return -1, nil, ErrCannotParseIPAddress(ipRaw)
 }
 
 //AddComment adds a new line of type comment with the given comment.
@@ -414,101 +443,145 @@ func (h *HostsFile) AddEmpty() (int, *HostsFileLine, error) {
 }
 
 //CommentByRow set the IsCommented bit for the given row to true
-func (h *HostsFile) CommentByRow(row int) {
+func (h *HostsFile) CommentByRow(row int) error {
 	h.Lock()
 	defer h.Unlock()
 
 	if row <= len(h.HostsFileLines) {
 		if h.HostsFileLines[row].LineType == ADDRESS {
-			h.HostsFileLines[row].IsCommented = true
-			return
+			if h.HostsFileLines[row].IsCommented != true {
+				h.HostsFileLines[row].IsCommented = true
+				return nil
+			}
+
+			return ErrAlredyCommentedLine
 		}
 
-		return
+		return ErrNotAnAddressLine
 	}
 
-	return
+	return ErrUnknown
 }
 
 //CommentByIP set the IsCommented bit for the given address to true
-func (h *HostsFile) CommentByIP(ip net.IP) {
+func (h *HostsFile) CommentByIP(ip net.IP) error {
 	h.Lock()
 	defer h.Unlock()
 
 	for idx, hfl := range h.HostsFileLines {
 		if net.IP.Equal(ip, hfl.Address) {
-			h.HostsFileLines[idx].IsCommented = true
+			if h.HostsFileLines[idx].IsCommented != true {
+				h.HostsFileLines[idx].IsCommented = true
+				return nil
+			}
+
+			return ErrAlredyCommentedLine
 		}
+
+		return ErrAddressNotFound
 	}
+
+	return ErrUnknown
 }
 
 //CommentByAddress set the IsCommented bit for the given address as string to false
-func (h *HostsFile) CommentByAddress(address string) {
+func (h *HostsFile) CommentByAddress(address string) error {
 	ip := net.ParseIP(address)
 
-	h.CommentByIP(ip)
+	return h.CommentByIP(ip)
 }
 
 //CommentByHostname set the IsCommented bit for the given hostname to true
-func (h *HostsFile) CommentByHostname(hostname string) {
+func (h *HostsFile) CommentByHostname(hostname string) error {
 	h.Lock()
 	defer h.Unlock()
 
 	for idx := range h.HostsFileLines {
 		for _, hn := range h.HostsFileLines[idx].Hostnames {
 			if hn == hostname {
-				h.HostsFileLines[idx].IsCommented = true
+				if h.HostsFileLines[idx].IsCommented != true {
+					h.HostsFileLines[idx].IsCommented = true
+					return nil
+				}
+
+				return ErrAlredyCommentedLine
 			}
 		}
+
+		return ErrHostnameNotFound
 	}
+
+	return ErrUnknown
 }
 
 //UncommentByRow set the IsCommented bit for the given row to false
-func (h *HostsFile) UncommentByRow(row int) {
+func (h *HostsFile) UncommentByRow(row int) error {
 	h.Lock()
 	defer h.Unlock()
 
 	if row <= len(h.HostsFileLines) {
 		if h.HostsFileLines[row].LineType == ADDRESS {
-			h.HostsFileLines[row].IsCommented = false
-			return
+			if h.HostsFileLines[row].IsCommented != false {
+				h.HostsFileLines[row].IsCommented = false
+				return nil
+			}
+
+			return ErrAlredyUncommentedLine
 		}
 
-		return
+		return ErrNotAnAddressLine
 	}
 
-	return
+	return ErrUnknown
 }
 
 //UncommentByIP set the IsCommented bit for the given address to false
-func (h *HostsFile) UncommentByIP(ip net.IP) {
+func (h *HostsFile) UncommentByIP(ip net.IP) error {
 	h.Lock()
 	defer h.Unlock()
 
 	for idx, hfl := range h.HostsFileLines {
 		if net.IP.Equal(ip, hfl.Address) {
-			h.HostsFileLines[idx].IsCommented = false
+			if h.HostsFileLines[idx].IsCommented != false {
+				h.HostsFileLines[idx].IsCommented = false
+				return nil
+			}
+
+			return ErrAlredyUncommentedLine
 		}
+
+		return ErrNotAnAddressLine
 	}
+
+	return ErrUnknown
 }
 
 //UncommentByAddress set the IsCommented bit for the given address as string to false
-func (h *HostsFile) UncommentByAddress(address string) {
+func (h *HostsFile) UncommentByAddress(address string) error {
 	ip := net.ParseIP(address)
 
-	h.UncommentByIP(ip)
+	return h.UncommentByIP(ip)
 }
 
 //UncommentByHostname set the IsCommented bit for the given hostname to false
-func (h *HostsFile) UncommentByHostname(hostname string) {
+func (h *HostsFile) UncommentByHostname(hostname string) error {
 	h.Lock()
 	defer h.Unlock()
 
 	for idx := range h.HostsFileLines {
 		for _, hn := range h.HostsFileLines[idx].Hostnames {
 			if hn == hostname {
-				h.HostsFileLines[idx].IsCommented = false
+				if h.HostsFileLines[idx].IsCommented != false {
+					h.HostsFileLines[idx].IsCommented = false
+					return nil
+				}
+
+				return ErrAlredyUncommentedLine
 			}
 		}
+
+		return ErrHostnameNotFound
 	}
+
+	return ErrUnknown
 }
