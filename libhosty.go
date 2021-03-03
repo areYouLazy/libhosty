@@ -13,7 +13,7 @@ import (
 
 const (
 	//Version exposes library version
-	Version = "v1.3"
+	Version = "v1.4"
 
 	//UNKNOWN defines unknown line type
 	UNKNOWN = 0
@@ -414,101 +414,145 @@ func (h *HostsFile) AddEmpty() (int, *HostsFileLine, error) {
 }
 
 //CommentByRow set the IsCommented bit for the given row to true
-func (h *HostsFile) CommentByRow(row int) {
+func (h *HostsFile) CommentByRow(row int) error {
 	h.Lock()
 	defer h.Unlock()
 
 	if row <= len(h.HostsFileLines) {
 		if h.HostsFileLines[row].LineType == ADDRESS {
-			h.HostsFileLines[row].IsCommented = true
-			return
+			if h.HostsFileLines[row].IsCommented != true {
+				h.HostsFileLines[row].IsCommented = true
+				return nil
+			}
+
+			return ErrAlredyCommentedLine
 		}
 
-		return
+		return ErrNotAnAddressLine
 	}
 
-	return
+	return ErrUnknown
 }
 
 //CommentByIP set the IsCommented bit for the given address to true
-func (h *HostsFile) CommentByIP(ip net.IP) {
+func (h *HostsFile) CommentByIP(ip net.IP) error {
 	h.Lock()
 	defer h.Unlock()
 
 	for idx, hfl := range h.HostsFileLines {
 		if net.IP.Equal(ip, hfl.Address) {
-			h.HostsFileLines[idx].IsCommented = true
+			if h.HostsFileLines[idx].IsCommented != true {
+				h.HostsFileLines[idx].IsCommented = true
+				return nil
+			}
+
+			return ErrAlredyCommentedLine
 		}
+
+		return ErrAddressNotFound
 	}
+
+	return ErrUnknown
 }
 
 //CommentByAddress set the IsCommented bit for the given address as string to false
-func (h *HostsFile) CommentByAddress(address string) {
+func (h *HostsFile) CommentByAddress(address string) error {
 	ip := net.ParseIP(address)
 
-	h.CommentByIP(ip)
+	return h.CommentByIP(ip)
 }
 
 //CommentByHostname set the IsCommented bit for the given hostname to true
-func (h *HostsFile) CommentByHostname(hostname string) {
+func (h *HostsFile) CommentByHostname(hostname string) error {
 	h.Lock()
 	defer h.Unlock()
 
 	for idx := range h.HostsFileLines {
 		for _, hn := range h.HostsFileLines[idx].Hostnames {
 			if hn == hostname {
-				h.HostsFileLines[idx].IsCommented = true
+				if h.HostsFileLines[idx].IsCommented != true {
+					h.HostsFileLines[idx].IsCommented = true
+					return nil
+				}
+
+				return ErrAlredyCommentedLine
 			}
 		}
+
+		return ErrHostnameNotFound
 	}
+
+	return ErrUnknown
 }
 
 //UncommentByRow set the IsCommented bit for the given row to false
-func (h *HostsFile) UncommentByRow(row int) {
+func (h *HostsFile) UncommentByRow(row int) error {
 	h.Lock()
 	defer h.Unlock()
 
 	if row <= len(h.HostsFileLines) {
 		if h.HostsFileLines[row].LineType == ADDRESS {
-			h.HostsFileLines[row].IsCommented = false
-			return
+			if h.HostsFileLines[row].IsCommented != false {
+				h.HostsFileLines[row].IsCommented = false
+				return nil
+			}
+
+			return ErrAlredyUncommentedLine
 		}
 
-		return
+		return ErrNotAnAddressLine
 	}
 
-	return
+	return ErrUnknown
 }
 
 //UncommentByIP set the IsCommented bit for the given address to false
-func (h *HostsFile) UncommentByIP(ip net.IP) {
+func (h *HostsFile) UncommentByIP(ip net.IP) error {
 	h.Lock()
 	defer h.Unlock()
 
 	for idx, hfl := range h.HostsFileLines {
 		if net.IP.Equal(ip, hfl.Address) {
-			h.HostsFileLines[idx].IsCommented = false
+			if h.HostsFileLines[idx].IsCommented != false {
+				h.HostsFileLines[idx].IsCommented = false
+				return nil
+			}
+
+			return ErrAlredyUncommentedLine
 		}
+
+		return ErrNotAnAddressLine
 	}
+
+	return ErrUnknown
 }
 
 //UncommentByAddress set the IsCommented bit for the given address as string to false
-func (h *HostsFile) UncommentByAddress(address string) {
+func (h *HostsFile) UncommentByAddress(address string) error {
 	ip := net.ParseIP(address)
 
-	h.UncommentByIP(ip)
+	return h.UncommentByIP(ip)
 }
 
 //UncommentByHostname set the IsCommented bit for the given hostname to false
-func (h *HostsFile) UncommentByHostname(hostname string) {
+func (h *HostsFile) UncommentByHostname(hostname string) error {
 	h.Lock()
 	defer h.Unlock()
 
 	for idx := range h.HostsFileLines {
 		for _, hn := range h.HostsFileLines[idx].Hostnames {
 			if hn == hostname {
-				h.HostsFileLines[idx].IsCommented = false
+				if h.HostsFileLines[idx].IsCommented != false {
+					h.HostsFileLines[idx].IsCommented = false
+					return nil
+				}
+
+				return ErrAlredyUncommentedLine
 			}
 		}
+
+		return ErrHostnameNotFound
 	}
+
+	return ErrUnknown
 }
