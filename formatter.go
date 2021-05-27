@@ -10,7 +10,7 @@ func lineFormatter(hfl HostsFileLine) string {
 
 	// returns raw if we don't need to edit the line
 	// this is for UNKNOWN, EMPTY and COMMENT linetypes
-	if hfl.LineType < ADDRESS {
+	if hfl.Type < LineTypeAddress {
 		return hfl.Raw
 	}
 

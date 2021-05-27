@@ -32,31 +32,31 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 	// trim leading an trailing whitespace
 	for i, l := range fileLines {
 		curLine := &hostsFileLines[i]
-		curLine.LineNumber = i
+		curLine.Number = i
 		curLine.Raw = l
 
 		// trim line
-		curLine.Trimed = strings.TrimSpace(l)
+		curLine.trimed = strings.TrimSpace(l)
 
 		// check if it's an empty line
-		if curLine.Trimed == "" {
-			curLine.LineType = EMPTY
+		if curLine.trimed == "" {
+			curLine.Type = LineTypeEmpty
 			continue
 		}
 
 		// check if line starts with a #
-		if strings.HasPrefix(curLine.Trimed, "#") {
+		if strings.HasPrefix(curLine.trimed, "#") {
 			// this can be a comment or a commented host line
 			// so remove the 1st char (#), trim spaces
 			// and try to parse the line as a host line
-			noCommentLine := strings.TrimPrefix(curLine.Trimed, "#")
+			noCommentLine := strings.TrimPrefix(curLine.trimed, "#")
 			tmpParts := strings.Fields(strings.TrimSpace(noCommentLine))
 
 			// check what we have
 			switch len(tmpParts) {
 			case 0:
 				// empty line, comment line
-				curLine.LineType = COMMENT
+				curLine.Type = LineTypeComment
 				continue
 			default:
 				// non-empty line, try to parse as address
@@ -64,28 +64,28 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 
 				// if address is nil this line is a comment
 				if address == nil {
-					curLine.LineType = COMMENT
+					curLine.Type = LineTypeComment
 					continue
 				}
 			}
 
 			// otherwise it is a commented line so let's try to parse it as a normal line
 			curLine.IsCommented = true
-			curLine.Trimed = noCommentLine
+			curLine.trimed = noCommentLine
 		}
 
 		// not a comment or empty line so try to parse it
 		// check if it contains a comment
-		curLineSplit := strings.SplitN(curLine.Trimed, "#", 2)
+		curLineSplit := strings.SplitN(curLine.trimed, "#", 2)
 		if len(curLineSplit) > 1 {
 			curLine.Comment = curLineSplit[1]
 		}
 
-		curLine.Trimed = curLineSplit[0]
-		curLine.Parts = strings.Fields(curLine.Trimed)
+		curLine.trimed = curLineSplit[0]
+		curLine.Parts = strings.Fields(curLine.trimed)
 
 		if len(curLine.Parts) > 1 {
-			curLine.LineType = ADDRESS
+			curLine.Type = LineTypeAddress
 			curLine.Address = net.ParseIP(curLine.Parts[0])
 			// lower case all
 			for _, p := range curLine.Parts[1:] {
@@ -96,7 +96,7 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 		}
 
 		// if we can't figure out what this line is mark it as unknown
-		curLine.LineType = UNKNOWN
+		curLine.Type = LineTypeUnknown
 	}
 
 	return hostsFileLines, nil

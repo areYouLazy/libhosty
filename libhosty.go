@@ -13,26 +13,40 @@ import (
 
 const (
 	//Version exposes library version
-	Version = "v1.4"
+	Version = "2.0"
+)
 
-	//UNKNOWN defines unknown line type
-	UNKNOWN = 0
-	//EMPTY defines empty line type
-	EMPTY = 10
-	//COMMENT defines comment line type
-	COMMENT = 20
-	//ADDRESS defines address line type
-	ADDRESS = 30
+const (
+	// defines environment variable for hosts file
+	envHostsFile = "LIBHOSTYHOSTSFILE"
+)
 
+const (
 	// defines default path for windows os
 	windowsFilePath = "C:\\Windows\\System32\\drivers\\etc\\"
+
 	// defines default path for linux os
 	unixFilePath = "/etc/"
+
 	// defines default filename
 	hostsFileName = "hosts"
+)
 
-	// defines environment variable for hosts file
-	envHostsFile = "HOSTYHOSTSFILE"
+//LineType define a safe type for line type enumeration
+type LineType int
+
+const (
+	//LineTypeUnknown defines unknown lines
+	LineTypeUnknown LineType = 0
+
+	//LineTypeEmpty defines empty lines
+	LineTypeEmpty LineType = 10
+
+	//LineTypeComment defines comment lines (starts with #)
+	LineTypeComment LineType = 20
+
+	//LineTypeAddress defines address lines (actual hosts lines)
+	LineTypeAddress LineType = 30
 )
 
 //HostsConfig defines parameters to find hosts file.
@@ -43,11 +57,11 @@ type HostsConfig struct {
 
 //HostsFileLine holds hosts file lines data
 type HostsFileLine struct {
-	//LineNumber is the original line number
-	LineNumber int
+	//Number is the original line number
+	Number int
 
-	//LineType is one of the types: UNKNOWN, EMPTY, COMMENT, ADDRESS
-	LineType int
+	//LineType defines the line type
+	Type LineType
 
 	//Address is a net.IP representation of the address
 	Address net.IP
@@ -61,14 +75,14 @@ type HostsFileLine struct {
 	//Raw is the raw representation of the line, as it is in the hosts file
 	Raw string
 
-	//Trimed is a trimed version (no spaces before and after) of the line
-	Trimed string
-
 	//Comment is the comment part of the line (if present in an ADDRESS line)
 	Comment string
 
 	//IsCommented to know if the current ADDRESS line is commented out (starts with '#')
 	IsCommented bool
+
+	//trimed is a trimed version (no spaces before and after) of the line
+	trimed string
 }
 
 //HostsFile is a reference for the hosts file configuration and lines
@@ -82,20 +96,45 @@ type HostsFile struct {
 	HostsFileLines []HostsFileLine
 }
 
-//Init returns a new instance of a hostsfile.
-// Init takes a HostsConfig object or nil to use the default one
-func Init(conf *HostsConfig) (*HostsFile, error) {
+//InitWithConf returns a new instance of a hostsfile.
+// InitWithConf is meant to be used with a custom conf file
+// however InitWithConf() will fallback to Init() if conf is nill
+// You should use Init() to load hosts file from default location
+func InitWithConf(conf *HostsConfig) (*HostsFile, error) {
 	var config *HostsConfig
 	var err error
 
 	if conf != nil {
 		config = conf
 	} else {
-		// initialize hostsConfig
-		config, err = NewHostsConfig("")
-		if err != nil {
-			return nil, err
-		}
+		return Init()
+	}
+
+	// allocate a new HostsFile object
+	hf := &HostsFile{
+		// use default configuration
+		Config: config,
+
+		// allocate a new slice of HostsFileLine objects
+		HostsFileLines: make([]HostsFileLine, 0),
+	}
+
+	// parse the hosts file and load file lines
+	hf.HostsFileLines, err = ParseHostsFile(hf.Config.FilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	//return HostsFile
+	return hf, nil
+}
+
+//Init returns a new instance of a hostsfile.
+func Init() (*HostsFile, error) {
+	// initialize hostsConfig
+	config, err := NewHostsConfig("")
+	if err != nil {
+		return nil, err
 	}
 
 	// allocate a new HostsFile object
@@ -300,7 +339,7 @@ func (h *HostsFile) AddHostRaw(ipRaw, fqdnRaw, comment string) (int, *HostsFileL
 	if ip != nil {
 		// create a new hosts line
 		hfl := HostsFileLine{
-			LineType:    ADDRESS,
+			Type:        LineTypeAddress,
 			Address:     ip,
 			Hostnames:   []string{hostname},
 			Comment:     comment,
@@ -381,7 +420,7 @@ func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine
 
 		// at this point we need to create new host line
 		hfl := HostsFileLine{
-			LineType:    ADDRESS,
+			Type:        LineTypeAddress,
 			Address:     ip,
 			Hostnames:   []string{hostname},
 			Comment:     comment,
@@ -413,8 +452,8 @@ func (h *HostsFile) AddComment(comment string) (int, *HostsFileLine, error) {
 	defer h.Unlock()
 
 	hfl := HostsFileLine{
-		LineType: COMMENT,
-		Raw:      "# " + comment,
+		Type: LineTypeComment,
+		Raw:  "# " + comment,
 	}
 
 	hfl.Raw = lineFormatter(hfl)
@@ -432,7 +471,7 @@ func (h *HostsFile) AddEmpty() (int, *HostsFileLine, error) {
 	defer h.Unlock()
 
 	hfl := HostsFileLine{
-		LineType: EMPTY,
+		Type: LineTypeEmpty,
 	}
 
 	hfl.Raw = ""
@@ -448,7 +487,7 @@ func (h *HostsFile) CommentByRow(row int) error {
 	defer h.Unlock()
 
 	if row <= len(h.HostsFileLines) {
-		if h.HostsFileLines[row].LineType == ADDRESS {
+		if h.HostsFileLines[row].Type == LineTypeAddress {
 			if h.HostsFileLines[row].IsCommented != true {
 				h.HostsFileLines[row].IsCommented = true
 				return nil
@@ -520,7 +559,7 @@ func (h *HostsFile) UncommentByRow(row int) error {
 	defer h.Unlock()
 
 	if row <= len(h.HostsFileLines) {
-		if h.HostsFileLines[row].LineType == ADDRESS {
+		if h.HostsFileLines[row].Type == LineTypeAddress {
 			if h.HostsFileLines[row].IsCommented != false {
 				h.HostsFileLines[row].IsCommented = false
 				return nil
