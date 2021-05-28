@@ -78,7 +78,8 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 		// check if it contains a comment
 		curLineSplit := strings.SplitN(curLine.trimed, "#", 2)
 		if len(curLineSplit) > 1 {
-			curLine.Comment = curLineSplit[1]
+			// trim spaces from comments
+			curLine.Comment = strings.TrimSpace(curLineSplit[1])
 		}
 
 		curLine.trimed = curLineSplit[0]
