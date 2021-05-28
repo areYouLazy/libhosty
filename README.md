@@ -14,6 +14,7 @@ libhosty is a pure golang library to manipulate the hosts file. It is inspired b
 * [Installation](#Installation)
 * [Usage](#Usage)
 * [Contributing](#Contributing)
+  * [Templates](#Templates)
 * [Credits](#Credits)
 * [License](#License)
 
@@ -150,6 +151,10 @@ If you handle errors properly, you'll notice that this example program will fail
 ## Contributing
 
 Issues and PRs are more than welcome!
+
+### Templates
+
+If you find a hosts template (like the Docker one) that you think can be useful to have in this library feel free to open a Pull Request
 
 ## Credits
 
