@@ -19,10 +19,13 @@ libhosty is a pure golang library to manipulate the hosts file. It is inspired b
 
 ## Main Features
 
-* Ability to Comment/Uncomment a host line without removing it from the file
-* Ability to restore the default hosts file for the 3 major OS (windows, linux, darwin)
-* Ability to add Comment lines
-* Ability to add Empty lines
+* Comment/Uncomment a line without removing it from the file
+* Restore the default hosts file for your system
+* Add/Remove Address lines
+* Add/Remove Comment lines
+* Add/Remove Empty lines
+* Query by hostname
+* Automatically handles duplicate entries
 
 ## Installation
 
