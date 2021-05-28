@@ -1,10 +1,23 @@
 # libhosty
 
+## Description
+
 [![made-with-Go](https://img.shields.io/badge/made%20with-Go-1f425f.svg)](http://golang.org)
 [![Go Report Card](https://goreportcard.com/badge/github.com/areYouLazy/libhosty)](https://goreportcard.com/report/github.com/areYouLazy/libhosty)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/areYouLazy/libhosty)
 
-libhosty is a pure golang library to manipulate the hosts file. It is inspired by [txeh](https://github.com/txn2/txeh), with some enrichments:
+libhosty is a pure golang library to manipulate the hosts file. It is inspired by [txeh](https://github.com/txn2/txeh), with some enrichments.
+
+## Table of Contents
+
+* [Main Features](#Main-Features)
+* [Installation](#Installation)
+* [Usage](#Usage)
+* [Contributing](#Contributing)
+* [Credits](#Credits)
+* [License](#License)
+
+## Main Features
 
 * Ability to Comment/Uncomment a host line without removing it from the file
 * Ability to restore the default hosts file for the 3 major OS (windows, linux, darwin)
@@ -26,7 +39,7 @@ and pull the library
 > go get github.com/areYouLazy/libhosty
 ```
 
-## Example
+## Usage
 
 To use the library, just import it and call the `Init()` method.
 
@@ -131,6 +144,14 @@ While the 2nd `fmt.Println()` should output the default template for linux syste
 
 If you handle errors properly, you'll notice that this example program will fail on the `SaveHostsFile()` call if started as a normal user, as editing the hosts file requires root privileges. This does not prevent libhosty from loading, managing, rendering and exporting the hosts file
 
-## Contribution
+## Contributing
 
 Issues and PRs are more than welcome!
+
+## Credits
+
+Project Contributors will be listed here
+
+## License
+
+Licenses under Apache License 2.0
