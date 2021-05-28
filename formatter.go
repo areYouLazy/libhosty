@@ -15,7 +15,7 @@ func lineFormatter(hfl HostsFileLine) string {
 	}
 
 	// check if it's a commented line
-	if hfl.IsCommented == true {
+	if hfl.IsCommented {
 		// check if there's a comment for that line
 		if len(hfl.Comment) > 0 {
 			return fmt.Sprintf("# %-16s\t%s\t#%s", hfl.Address, strings.Join(hfl.Hostnames, " "), hfl.Comment)
