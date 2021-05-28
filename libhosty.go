@@ -3,7 +3,6 @@ package libhosty
 
 import (
 	"io/ioutil"
-	"log"
 	"net"
 	"os"
 	"runtime"
@@ -14,11 +13,6 @@ import (
 const (
 	//Version exposes library version
 	Version = "2.0"
-)
-
-const (
-	// defines environment variable for hosts file
-	envHostsFile = "LIBHOSTYHOSTSFILE"
 )
 
 const (
@@ -163,13 +157,16 @@ func NewHostsConfig(path string) (*HostsConfig, error) {
 	// allocate hostsConfig
 	var hc *HostsConfig
 
-	// TODO ensure path exists and is a file (not a dir)
-
-	if len(path) > 0 {
-		hc = &HostsConfig{
-			FilePath: path,
+	// ensure custom path exists
+	if fh, err := os.Stat(path); os.IsExist(err) {
+		// eusure custom path points to a file (not a directory)
+		if !fh.IsDir() {
+			hc = &HostsConfig{
+				FilePath: path,
+			}
 		}
 	} else {
+		// check os to construct default path
 		switch runtime.GOOS {
 		case "windows":
 			hc = &HostsConfig{
@@ -178,13 +175,6 @@ func NewHostsConfig(path string) (*HostsConfig, error) {
 		default:
 			hc = &HostsConfig{
 				FilePath: unixFilePath + hostsFileName,
-			}
-			p := os.Getenv(envHostsFile)
-			if p != "" {
-				hc.FilePath = p
-			} else {
-				log.Printf("Unable to recognize OS %s, using default linux location %s", runtime.GOOS, hc.FilePath)
-				log.Printf("Use %s environment variable to change the file location", envHostsFile)
 			}
 		}
 	}
