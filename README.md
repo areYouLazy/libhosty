@@ -1,5 +1,9 @@
 # libhosty
 
+[![made-with-Go](https://img.shields.io/badge/made%20with-Go-1f425f.svg)](http://golang.org)
+[![Go Report Card](https://goreportcard.com/badge/github.com/areYouLazy/libhosty)](https://goreportcard.com/report/github.com/areYouLazy/libhosty)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/areYouLazy/libhosty)
+
 libhosty is a pure golang library to manipulate the hosts file. It is inspired by [txeh](https://github.com/txn2/txeh), with some enrichments:
 
 * Ability to Comment/Uncomment a host line without removing it from the file
