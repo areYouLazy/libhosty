@@ -1,6 +1,4 @@
 mode: set
-github.com/areYouLazy/libhosty/errors.go:31.47,33.2 1 0
-github.com/areYouLazy/libhosty/errors.go:36.41,38.2 1 0
 github.com/areYouLazy/libhosty/formatter.go:9.46,13.32 1 1
 github.com/areYouLazy/libhosty/formatter.go:18.2,18.21 1 1
 github.com/areYouLazy/libhosty/formatter.go:28.2,28.26 1 1
@@ -158,3 +156,5 @@ github.com/areYouLazy/libhosty/parser.go:80.28,83.4 1 1
 github.com/areYouLazy/libhosty/parser.go:88.29,92.40 3 1
 github.com/areYouLazy/libhosty/parser.go:96.4,96.12 1 1
 github.com/areYouLazy/libhosty/parser.go:92.40,94.5 1 1
+github.com/areYouLazy/libhosty/errors.go:31.47,33.2 1 0
+github.com/areYouLazy/libhosty/errors.go:36.41,38.2 1 0
