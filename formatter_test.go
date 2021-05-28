@@ -1,7 +1,6 @@
 package libhosty
 
 import (
-	"fmt"
 	"regexp"
 	"testing"
 )
@@ -14,7 +13,6 @@ func TestLineFormatter(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unable to parse testHostsFile: %s", err)
 	}
-	fmt.Println(hfl)
 
 	// invoke lineFormatter on 1st hosts file line
 	l := lineFormatter(hfl[0])
