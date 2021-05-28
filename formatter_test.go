@@ -20,7 +20,7 @@ func TestLineFormatter(t *testing.T) {
 		trimed:      "1.1.1.1 my.host.name",
 	}
 
-	// invoke lineFormatter on 1st hosts file line
+	// invoke lineFormatter hosts file line
 	l := lineFormatter(hfl)
 
 	// define what we expect
