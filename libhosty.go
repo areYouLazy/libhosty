@@ -175,14 +175,6 @@ func NewHostsConfig(path string) (*HostsConfig, error) {
 			hc = &HostsConfig{
 				FilePath: windowsFilePath + hostsFileName,
 			}
-		case "linux":
-			hc = &HostsConfig{
-				FilePath: unixFilePath + hostsFileName,
-			}
-		case "darwin":
-			hc = &HostsConfig{
-				FilePath: unixFilePath + hostsFileName,
-			}
 		default:
 			hc = &HostsConfig{
 				FilePath: unixFilePath + hostsFileName,
@@ -194,23 +186,6 @@ func NewHostsConfig(path string) (*HostsConfig, error) {
 				log.Printf("Unable to recognize OS %s, using default linux location %s", runtime.GOOS, hc.FilePath)
 				log.Printf("Use %s environment variable to change the file location", envHostsFile)
 			}
-		}
-
-		// check OS to load the correct hostsFile location
-		if runtime.GOOS == "windows" {
-			hc = &HostsConfig{
-				FilePath: windowsFilePath + hostsFileName,
-			}
-		} else if runtime.GOOS == "linux" {
-			hc = &HostsConfig{
-				FilePath: unixFilePath + hostsFileName,
-			}
-		} else if runtime.GOOS == "darwin" {
-			hc = &HostsConfig{
-				FilePath: unixFilePath + hostsFileName,
-			}
-		} else {
-			return nil, ErrUnrecognizedOS(runtime.GOOS)
 		}
 	}
 
