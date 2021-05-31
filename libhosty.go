@@ -189,6 +189,10 @@ func (h *HostsFile) GetHostsFileLineByRow(row int) *HostsFileLine {
 
 //GetHostsFileLineByIP returns the index of the line and a ponter to the given HostsFileLine line
 func (h *HostsFile) GetHostsFileLineByIP(ip net.IP) (int, *HostsFileLine) {
+	if ip == nil {
+		return -1, nil
+	}
+
 	for idx := range h.HostsFileLines {
 		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
 			return idx, &h.HostsFileLines[idx]
