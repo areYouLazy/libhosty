@@ -60,7 +60,7 @@ func main() {
     // and use it to initialize libhosty with a custom hosts file
     //
     //cnf, _ := libhosty.NewHostsConfig("/home/sonica/hosts-export.txt")
-    //hfl, _ := libhosty.InitWithConf(cnf)
+    //hfl, _ := libhosty.InitWithConfig(cnf)
     
     //or initialize libhosty that will automatically try to loads
     // then default hosts file for your OS

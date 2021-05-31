@@ -90,11 +90,11 @@ type HostsFile struct {
 	HostsFileLines []HostsFileLine
 }
 
-//InitWithConf returns a new instance of a hostsfile.
-// InitWithConf is meant to be used with a custom conf file
-// however InitWithConf() will fallback to Init() if conf is nill
+//InitWithConfig returns a new instance of a hostsfile.
+// InitWithConfig is meant to be used with a custom conf file
+// however InitWithConfig() will fallback to Init() if conf is nill
 // You should use Init() to load hosts file from default location
-func InitWithConf(conf *HostsConfig) (*HostsFile, error) {
+func InitWithConfig(conf *HostsConfig) (*HostsFile, error) {
 	var config *HostsConfig
 	var err error
 

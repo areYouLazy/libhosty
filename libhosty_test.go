@@ -72,13 +72,13 @@ func TestInitWithConf(t *testing.T) {
 	var err error
 
 	//test with conf = nil
-	hf, err = InitWithConf(nil)
+	hf, err = InitWithConfig(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// test with conf
-	hf, err = InitWithConf(hc)
+	hf, err = InitWithConfig(hc)
 	if err != nil {
 		t.Fatal(err)
 	}
