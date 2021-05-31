@@ -69,7 +69,7 @@ func TestParseHostsFile(t *testing.T) {
 func TestParseHostsFileAsString(t *testing.T) {
 	// define a custom hosts file with an address line and an invalid line"
 	var fakeHostsFile = `1.1.1.1 my.hosts.file # With Comment
-129dj120isdj12i0`
+129dj120isdj12i0 1092jd 210dk`
 
 	hf, err := ParseHostsFileAsString(fakeHostsFile)
 	if err != nil {

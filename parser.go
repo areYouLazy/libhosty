@@ -86,14 +86,19 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 		curLine.Parts = strings.Fields(curLine.trimed)
 
 		if len(curLine.Parts) > 1 {
-			curLine.Type = LineTypeAddress
-			curLine.Address = net.ParseIP(curLine.Parts[0])
-			// lower case all
-			for _, p := range curLine.Parts[1:] {
-				curLine.Hostnames = append(curLine.Hostnames, strings.ToLower(p))
-			}
+			// parse address to ensure we have a valid address line
+			tmpIP := net.ParseIP(curLine.Parts[0])
+			if tmpIP != nil {
 
-			continue
+				curLine.Type = LineTypeAddress
+				curLine.Address = tmpIP
+				// lower case all
+				for _, p := range curLine.Parts[1:] {
+					curLine.Hostnames = append(curLine.Hostnames, strings.ToLower(p))
+				}
+
+				continue
+			}
 		}
 
 		// if we can't figure out what this line is mark it as unknown
