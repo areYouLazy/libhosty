@@ -2,7 +2,7 @@
 
 [![made-with-Go](https://img.shields.io/badge/made%20with-Go-1f425f.svg)](http://golang.org)
 [![Go Report Card](https://goreportcard.com/badge/github.com/areYouLazy/libhosty)](https://goreportcard.com/report/github.com/areYouLazy/libhosty)
-[![Go](https://github.com/areYouLazy/libhosty/actions/workflows/go.yml/badge.svg?event=push)](https://github.com/areYouLazy/libhosty/actions/workflows/go.yml)
+[![Build and Test](https://github.com/areYouLazy/libhosty/actions/workflows/build-and-test.yml/badge.svg?branch=main&event=push)](https://github.com/areYouLazy/libhosty/actions/workflows/build-and-test.yml)
 ![gopherbadger-tag-do-not-edit](coverage_badge.png)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/areYouLazy/libhosty)
 
