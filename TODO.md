@@ -1,3 +1,4 @@
 # TODO
 
-* Improve Tests
+* Improve tests
+* Improve comments

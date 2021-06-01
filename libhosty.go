@@ -316,6 +316,69 @@ func (h *HostsFile) RemoveHostsFileLineByRow(row int) {
 	}
 }
 
+func (h *HostsFile) RemoveHostsFileLineByIP(ip net.IP) {
+	h.Lock()
+	defer h.Unlock()
+
+	for idx := range h.HostsFileLines {
+		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
+			h.HostsFileLines = append(h.HostsFileLines[:idx], h.HostsFileLines[idx+1:]...)
+			return
+		}
+	}
+}
+
+func (h *HostsFile) RemoveHostsFileLinesByIP(ip net.IP) {
+	h.Lock()
+	defer h.Unlock()
+
+	for idx := range h.HostsFileLines {
+		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
+			h.HostsFileLines = append(h.HostsFileLines[:idx], h.HostsFileLines[idx+1:]...)
+		}
+	}
+}
+
+func (h *HostsFile) RemoveHostsFileLineByAddress(address string) {
+	ip := net.ParseIP(address)
+
+	h.RemoveHostsFileLineByIP(ip)
+}
+
+func (h *HostsFile) RemoveHostsFileLinesByAddress(address string) {
+	ip := net.ParseIP(address)
+
+	h.RemoveHostsFileLinesByIP(ip)
+}
+
+func (h *HostsFile) RemoveHostsFileLineByHostname(hostname string) {
+	h.Lock()
+	defer h.Unlock()
+
+	for idx := range h.HostsFileLines {
+		for _, hn := range h.HostsFileLines[idx].Hostnames {
+			if hn == hostname {
+				h.HostsFileLines = append(h.HostsFileLines[:idx], h.HostsFileLines[idx+1:]...)
+				return
+			}
+		}
+	}
+}
+
+func (h *HostsFile) RemoveHostsFileLinesByHostname(hostname string) {
+	h.Lock()
+	defer h.Unlock()
+
+	for idx := range h.HostsFileLines {
+		for _, hn := range h.HostsFileLines[idx].Hostnames {
+			if hn == hostname {
+				h.HostsFileLines = append(h.HostsFileLines[:idx], h.HostsFileLines[idx+1:]...)
+				continue
+			}
+		}
+	}
+}
+
 //LookupByHostname check if the given fqdn exists.
 // if yes, it returns the index of the address and the associated address.
 // error is not nil if something goes wrong
