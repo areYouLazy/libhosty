@@ -8,7 +8,7 @@ import (
 )
 
 var hf *HostsFile
-var hc *HostsConfig
+var hc *HostsFileConfig
 
 func TestInit(t *testing.T) {
 	var err error
@@ -27,10 +27,10 @@ func TestInit(t *testing.T) {
 	}
 }
 
-func TestNewHostsConfig(t *testing.T) {
+func TestNewHostsFileConfig(t *testing.T) {
 	var err error
 
-	hc, err = NewHostsConfig("")
+	hc, err = NewHostsFileConfig("")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,7 +45,7 @@ func TestNewHostsConfig(t *testing.T) {
 		}
 	}
 
-	hc, err := NewHostsConfig("/etc")
+	hc, err := NewHostsFileConfig("/etc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,12 +53,12 @@ func TestNewHostsConfig(t *testing.T) {
 		t.Fatalf("should have %q got %q", "/etc/hosts", hc.FilePath)
 	}
 
-	hc, err = NewHostsConfig("/etc/passwd")
+	hc, err = NewHostsFileConfig("/etc/passwd")
 	if err == nil && hc.FilePath != "/etc/hosts" {
 		t.Fatalf("should have error or default hostsConfig")
 	}
 
-	hc, err = NewHostsConfig("/etc/hosts")
+	hc, err = NewHostsFileConfig("/etc/hosts")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,7 +89,7 @@ func TestInitWithConf(t *testing.T) {
 }
 
 func TestGetHostsFileLineByRow(t *testing.T) {
-	idx, _, _ := hf.AddHost("9.9.9.9", "gethostsfilelinebyrow.libhosty.local", "")
+	idx, _, _ := hf.AddHostsFileLine("9.9.9.9", "gethostsfilelinebyrow.libhosty.local", "")
 	hfl := hf.GetHostsFileLineByRow(idx)
 	if hfl.Number != 0 {
 		t.Fatalf("error: wants %d got %d", idx, hfl.Number)
@@ -97,7 +97,7 @@ func TestGetHostsFileLineByRow(t *testing.T) {
 }
 
 func TestGetHostsFileLineByIP(t *testing.T) {
-	_, _, err := hf.AddHost("8.8.8.8", "gethostsfilelinebyip.libhosty.local", "")
+	_, _, err := hf.AddHostsFileLine("8.8.8.8", "gethostsfilelinebyip.libhosty.local", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -117,7 +117,7 @@ func TestGetHostsFileLineByIP(t *testing.T) {
 }
 
 func TestGetHostsFileLineByAddress(t *testing.T) {
-	hf.AddHost("7.7.7.7", "gethostsfilelinebyaddress.libhosty.local", "")
+	hf.AddHostsFileLine("7.7.7.7", "gethostsfilelinebyaddress.libhosty.local", "")
 	_, hfl := hf.GetHostsFileLineByAddress("7.7.7.7")
 
 	if res := strings.Compare(hfl.Address.String(), "7.7.7.7"); res != 0 {
@@ -126,7 +126,7 @@ func TestGetHostsFileLineByAddress(t *testing.T) {
 }
 
 func TestGetHostsFileLineByHostname(t *testing.T) {
-	hf.AddHost("6.6.6.6", "gethostsfilelinebyhostname.libhosty.local", "")
+	hf.AddHostsFileLine("6.6.6.6", "gethostsfilelinebyhostname.libhosty.local", "")
 	_, hfl := hf.GetHostsFileLineByHostname("gethostsfilelinebyhostname.libhosty.local")
 
 	res := false
@@ -146,8 +146,8 @@ func TestGetHostsFileLineByHostname(t *testing.T) {
 	}
 }
 
-func TestAddComment(t *testing.T) {
-	hf.AddComment("comment")
+func TestAddCommentFileLine(t *testing.T) {
+	hf.AddCommentFileLine("comment")
 
 	hfl := hf.HostsFileLines[len(hf.HostsFileLines)-1]
 	if hfl.Type != LineTypeComment {
@@ -159,8 +159,8 @@ func TestAddComment(t *testing.T) {
 	}
 }
 
-func TestAddEmpty(t *testing.T) {
-	idx, _, err := hf.AddEmpty()
+func TestAddEmptyFileLine(t *testing.T) {
+	idx, _, err := hf.AddEmptyFileLine()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -171,8 +171,8 @@ func TestAddEmpty(t *testing.T) {
 	}
 }
 
-func TestAddHost(t *testing.T) {
-	idx, _, err := hf.AddHost("5.5.5.5", "addhost.libhosty.local", "my comment")
+func TestAddHostsFileLine(t *testing.T) {
+	idx, _, err := hf.AddHostsFileLine("5.5.5.5", "addhost.libhosty.local", "my comment")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -200,24 +200,24 @@ func TestAddHost(t *testing.T) {
 		t.Fatalf("expecting %q, found %q", "my comment", hfl.Comment)
 	}
 
-	_, _, err = hf.AddHost("5.5.5.5", "addhost.libhosty.local", "")
+	_, _, err = hf.AddHostsFileLine("5.5.5.5", "addhost.libhosty.local", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, _, err = hf.AddHost("5.5.5.5", "addhost2.libhosty.local", "")
+	_, _, err = hf.AddHostsFileLine("5.5.5.5", "addhost2.libhosty.local", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, _, err = hf.AddHost("5.5.5.6", "addhost2.libhosty.local", "")
+	_, _, err = hf.AddHostsFileLine("5.5.5.6", "addhost2.libhosty.local", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func TestAddHostRaw(t *testing.T) {
-	idx, _, err := hf.AddHostRaw("4.4.4.4", "addhostraw.libhosty.local", "my comment")
+func TestAddHostsFileLineRaw(t *testing.T) {
+	idx, _, err := hf.AddHostsFileLineRaw("4.4.4.4", "addhostraw.libhosty.local", "my comment")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -245,14 +245,14 @@ func TestAddHostRaw(t *testing.T) {
 		t.Fatalf("expecting %q, found %q", "my comment", hfl.Comment)
 	}
 
-	idx, _, _ = hf.AddHostRaw("fa.ke.i.p", "addhostraw.libhosty.local", "")
+	idx, _, _ = hf.AddHostsFileLineRaw("fa.ke.i.p", "addhostraw.libhosty.local", "")
 	if idx != -1 {
 		t.Fatalf("wants %d got %d", -1, idx)
 	}
 }
 
-func TestCommentByRow(t *testing.T) {
-	idx, hfl, err := hf.AddHost("3.3.3.3", "commentbyrow.host.name", "")
+func TestCommentHostsFileLineByRow(t *testing.T) {
+	idx, hfl, err := hf.AddHostsFileLine("3.3.3.3", "commentbyrow.host.name", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -261,7 +261,7 @@ func TestCommentByRow(t *testing.T) {
 		t.Fatal("new line is commented")
 	}
 
-	err = hf.CommentByRow(idx)
+	err = hf.CommentHostsFileLineByRow(idx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -276,10 +276,10 @@ func TestCommentByRow(t *testing.T) {
 	}
 }
 
-func TestUncommentByRow(t *testing.T) {
+func TestUncommentHostsFileLineByRow(t *testing.T) {
 	idx, _ := hf.GetHostsFileLineByAddress("3.3.3.3")
 
-	err := hf.UncommentByRow(idx)
+	err := hf.UncommentHostsFileLineByRow(idx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -290,14 +290,14 @@ func TestUncommentByRow(t *testing.T) {
 	}
 }
 
-func TestCommentByIP(t *testing.T) {
-	_, _, err := hf.AddHost("2.2.2.2", "commentbyip.libhosty.local", "")
+func TestCommentHostsFileLineByIP(t *testing.T) {
+	_, _, err := hf.AddHostsFileLine("2.2.2.2", "commentbyip.libhosty.local", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	ip := net.ParseIP("2.2.2.2")
-	err = hf.CommentByIP(ip)
+	err = hf.CommentHostsFileLineByIP(ip)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -312,9 +312,9 @@ func TestCommentByIP(t *testing.T) {
 	}
 }
 
-func TestUncommentByIP(t *testing.T) {
+func TestUncommentHostsFileLineByIP(t *testing.T) {
 	ip := net.ParseIP("2.2.2.2")
-	err := hf.UncommentByIP(ip)
+	err := hf.UncommentHostsFileLineByIP(ip)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -325,13 +325,13 @@ func TestUncommentByIP(t *testing.T) {
 	}
 }
 
-func TestCommentByAddress(t *testing.T) {
-	_, _, err := hf.AddHost("2.2.2.3", "commentbyaddress.libhosty.local", "")
+func TestCommentHostsFileLineByAddress(t *testing.T) {
+	_, _, err := hf.AddHostsFileLine("2.2.2.3", "commentbyaddress.libhosty.local", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = hf.CommentByAddress("2.2.2.3")
+	err = hf.CommentHostsFileLineByAddress("2.2.2.3")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -346,8 +346,8 @@ func TestCommentByAddress(t *testing.T) {
 	}
 }
 
-func TestUncommentByAddress(t *testing.T) {
-	err := hf.UncommentByAddress("2.2.2.3")
+func TestUncommentHostsFileLineByAddress(t *testing.T) {
+	err := hf.UncommentHostsFileLineByAddress("2.2.2.3")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -358,13 +358,13 @@ func TestUncommentByAddress(t *testing.T) {
 	}
 }
 
-func TestCommentByHostname(t *testing.T) {
-	_, _, err := hf.AddHost("2.2.2.4", "commentbyhostname.libhosty.local", "")
+func TestCommentHostsFileLineByHostname(t *testing.T) {
+	_, _, err := hf.AddHostsFileLine("2.2.2.4", "commentbyhostname.libhosty.local", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = hf.CommentByHostname("commentbyhostname.libhosty.local")
+	err = hf.CommentHostsFileLineByHostname("commentbyhostname.libhosty.local")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -379,8 +379,8 @@ func TestCommentByHostname(t *testing.T) {
 	}
 }
 
-func TestUncommentByHostname(t *testing.T) {
-	err := hf.UncommentByHostname("commentbyhostname.libhosty.local")
+func TestUncommentHostsFileLineByHostname(t *testing.T) {
+	err := hf.UncommentHostsFileLineByHostname("commentbyhostname.libhosty.local")
 	if err != nil {
 		t.Fatal(err)
 	}

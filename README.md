@@ -60,7 +60,7 @@ func main() {
     //you can define a custom config object
     // and use it to initialize libhosty with a custom hosts file
     //
-    //cnf, _ := libhosty.NewHostsConfig("/home/sonica/hosts-export.txt")
+    //cnf, _ := libhosty.NewHostsFileConfig("/home/sonica/hosts-export.txt")
     //hfl, _ := libhosty.InitWithConfig(cnf)
     
     //or initialize libhosty that will automatically try to loads
@@ -68,22 +68,22 @@ func main() {
     hfl, _ := libhosty.Init()
     
     //add an empty line
-    hfl.AddEmpty()
+    hfl.AddEmptyFileLine()
     
     //add a host with a comment
-    hfl.AddHost("12.12.12.12", "my.host.name", "comment on my hostname!")
+    hfl.AddHostFileLine("12.12.12.12", "my.host.name", "comment on my hostname!")
     
     //add a comment
-    hfl.AddComment("just a comment")
+    hfl.AddCommentFileLine("just a comment")
     
     //add an empty line
-    hfl.AddEmpty()
+    hfl.AddEmptyFileLine()
     
     //add another host without comment
-    hfl.AddHost("13.13.13.13", "another.host.name", "")
+    hfl.AddHostsFileLine("13.13.13.13", "another.host.name", "")
     
     //add another fqdn to the previous ip
-    hfl.AddHost("12.12.12.12", "second.host.name", "")
+    hfl.AddHostsFileLine("12.12.12.12", "second.host.name", "")
     
     // comment for host lines can be done by hostname, row line
     // or IP (as net.IP or string)
@@ -92,17 +92,17 @@ func main() {
     //
     // By-Row-Number
     idx, _ := hfl.GetHostsFileLineByHostname("second.host.name")
-    hfl.CommentByRow(idx)
+    hfl.CommentHostsFileLineByRow(idx)
     //
     // By-Hostname
-    hfl.CommentByHostname("second.host.name")
+    hfl.CommentHostsFileLineByHostname("second.host.name")
     //
     // By-Address-As-IP
     ip := net.ParseIP("12.12.12.12")
-    hfl.CommentByIP(ip)
+    hfl.CommentHostsFileLineByIP(ip)
     //
     // By-Address-As-String
-    hfl.CommentByAddress("12.12.12.12")
+    hfl.CommentHostsFileLineByAddress("12.12.12.12")
     
     // render the hosts file
     fmt.Println(hfl.RenderHostsFile())

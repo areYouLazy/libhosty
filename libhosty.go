@@ -43,9 +43,9 @@ const (
 	LineTypeAddress LineType = 30
 )
 
-//HostsConfig defines parameters to find hosts file.
+//HostsFileConfig defines parameters to find hosts file.
 // FilePath is the absolute path of the hosts file (filename included)
-type HostsConfig struct {
+type HostsFileConfig struct {
 	FilePath string
 }
 
@@ -84,7 +84,7 @@ type HostsFile struct {
 	sync.Mutex
 
 	//Config reference to a HostsConfig object
-	Config *HostsConfig
+	Config *HostsFileConfig
 
 	//HostsFileLines slice of HostsFileLine objects
 	HostsFileLines []HostsFileLine
@@ -94,8 +94,8 @@ type HostsFile struct {
 // InitWithConfig is meant to be used with a custom conf file
 // however InitWithConfig() will fallback to Init() if conf is nill
 // You should use Init() to load hosts file from default location
-func InitWithConfig(conf *HostsConfig) (*HostsFile, error) {
-	var config *HostsConfig
+func InitWithConfig(conf *HostsFileConfig) (*HostsFile, error) {
+	var config *HostsFileConfig
 	var err error
 
 	if conf != nil {
@@ -126,7 +126,7 @@ func InitWithConfig(conf *HostsConfig) (*HostsFile, error) {
 //Init returns a new instance of a hostsfile.
 func Init() (*HostsFile, error) {
 	// initialize hostsConfig
-	config, err := NewHostsConfig("")
+	config, err := NewHostsFileConfig("")
 	if err != nil {
 		return nil, err
 	}
@@ -150,18 +150,18 @@ func Init() (*HostsFile, error) {
 	return hf, nil
 }
 
-//NewHostsConfig loads hosts file based on environment.
-// NewHostsConfig initialize the default file path based
+//NewHostsFileConfig loads hosts file based on environment.
+// NewHostsFileConfig initialize the default file path based
 // on the OS or from a given location if a custom path is provided
-func NewHostsConfig(path string) (*HostsConfig, error) {
+func NewHostsFileConfig(path string) (*HostsFileConfig, error) {
 	// allocate hostsConfig
-	var hc *HostsConfig
+	var hc *HostsFileConfig
 
 	// ensure custom path exists
 	if fh, err := os.Stat(path); os.IsExist(err) {
 		// eusure custom path points to a file (not a directory)
 		if !fh.IsDir() {
-			hc = &HostsConfig{
+			hc = &HostsFileConfig{
 				FilePath: path,
 			}
 		}
@@ -169,11 +169,11 @@ func NewHostsConfig(path string) (*HostsConfig, error) {
 		// check os to construct default path
 		switch runtime.GOOS {
 		case "windows":
-			hc = &HostsConfig{
+			hc = &HostsFileConfig{
 				FilePath: windowsFilePath + hostsFileName,
 			}
 		default:
-			hc = &HostsConfig{
+			hc = &HostsFileConfig{
 				FilePath: unixFilePath + hostsFileName,
 			}
 		}
@@ -269,8 +269,8 @@ func (h *HostsFile) SaveHostsFileAs(path string) error {
 	return nil
 }
 
-//RemoveRow remove row at given index from HostsFileLines
-func (h *HostsFile) RemoveRow(row int) {
+//RemoveHostsFileLineByRow remove row at given index from HostsFileLines
+func (h *HostsFile) RemoveHostsFileLineByRow(row int) {
 	h.Lock()
 	defer h.Unlock()
 
@@ -295,10 +295,10 @@ func (h *HostsFile) LookupByHostname(hostname string) (int, net.IP, error) {
 	return -1, nil, ErrHostnameNotFound
 }
 
-//AddHostRaw add the given ip/fqdn/comment pair
-// this is different from AddHost because it does not take care of duplicates
+//AddHostsFileLineRaw add the given ip/fqdn/comment pair
+// this is different from AddHostFileLine because it does not take care of duplicates
 // this just append the new entry to the hosts file
-func (h *HostsFile) AddHostRaw(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine, error) {
+func (h *HostsFile) AddHostsFileLineRaw(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine, error) {
 	// hostname to lowercase
 	hostname := strings.ToLower(fqdnRaw)
 	// parse ip to net.IP
@@ -329,10 +329,10 @@ func (h *HostsFile) AddHostRaw(ipRaw, fqdnRaw, comment string) (int, *HostsFileL
 	return -1, nil, ErrCannotParseIPAddress(ipRaw)
 }
 
-//AddHost add the given ip/fqdn/comment pair, cleanup is done for previous entry.
+//AddHostsFileLine add the given ip/fqdn/comment pair, cleanup is done for previous entry.
 // it returns the index of the edited (created) line and a pointer to the hostsfileline object.
 // error is not nil if something goes wrong
-func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine, error) {
+func (h *HostsFile) AddHostsFileLine(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine, error) {
 	// hostname to lowercase
 	hostname := strings.ToLower(fqdnRaw)
 	// parse ip to net.IP
@@ -363,7 +363,7 @@ func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine
 
 					//remove the line if there are no more hostnames (other than the actual one)
 					if len(h.HostsFileLines[idx].Hostnames) <= 1 {
-						h.RemoveRow(idx)
+						h.RemoveHostsFileLineByRow(idx)
 					}
 				}
 			}
@@ -413,10 +413,10 @@ func (h *HostsFile) AddHost(ipRaw, fqdnRaw, comment string) (int, *HostsFileLine
 	return -1, nil, ErrCannotParseIPAddress(ipRaw)
 }
 
-//AddComment adds a new line of type comment with the given comment.
+//AddCommentFileLine adds a new line of type comment with the given comment.
 // it returns the index of the edited (created) line and a pointer to the hostsfileline object.
 // error is not nil if something goes wrong
-func (h *HostsFile) AddComment(comment string) (int, *HostsFileLine, error) {
+func (h *HostsFile) AddCommentFileLine(comment string) (int, *HostsFileLine, error) {
 	h.Lock()
 	defer h.Unlock()
 
@@ -432,10 +432,10 @@ func (h *HostsFile) AddComment(comment string) (int, *HostsFileLine, error) {
 	return idx, &h.HostsFileLines[idx], nil
 }
 
-//AddEmpty adds a new line of type empty.
+//AddEmptyFileLine adds a new line of type empty.
 // it returns the index of the edited (created) line and a pointer to the hostsfileline object.
 // error is not nil if something goes wrong
-func (h *HostsFile) AddEmpty() (int, *HostsFileLine, error) {
+func (h *HostsFile) AddEmptyFileLine() (int, *HostsFileLine, error) {
 	h.Lock()
 	defer h.Unlock()
 
@@ -450,8 +450,8 @@ func (h *HostsFile) AddEmpty() (int, *HostsFileLine, error) {
 	return idx, &h.HostsFileLines[idx], nil
 }
 
-//CommentByRow set the IsCommented bit for the given row to true
-func (h *HostsFile) CommentByRow(row int) error {
+//CommentHostsFileLineByRow set the IsCommented bit for the given row to true
+func (h *HostsFile) CommentHostsFileLineByRow(row int) error {
 	h.Lock()
 	defer h.Unlock()
 
@@ -471,8 +471,8 @@ func (h *HostsFile) CommentByRow(row int) error {
 	return ErrUnknown
 }
 
-//CommentByIP set the IsCommented bit for the given address to true
-func (h *HostsFile) CommentByIP(ip net.IP) error {
+//CommentHostsFileLineByIP set the IsCommented bit for the given address to true
+func (h *HostsFile) CommentHostsFileLineByIP(ip net.IP) error {
 	h.Lock()
 	defer h.Unlock()
 
@@ -490,15 +490,15 @@ func (h *HostsFile) CommentByIP(ip net.IP) error {
 	return ErrAddressNotFound
 }
 
-//CommentByAddress set the IsCommented bit for the given address as string to false
-func (h *HostsFile) CommentByAddress(address string) error {
+//CommentHostsFileLineByAddress set the IsCommented bit for the given address as string to false
+func (h *HostsFile) CommentHostsFileLineByAddress(address string) error {
 	ip := net.ParseIP(address)
 
-	return h.CommentByIP(ip)
+	return h.CommentHostsFileLineByIP(ip)
 }
 
-//CommentByHostname set the IsCommented bit for the given hostname to true
-func (h *HostsFile) CommentByHostname(hostname string) error {
+//CommentHostsFileLineByHostname set the IsCommented bit for the given hostname to true
+func (h *HostsFile) CommentHostsFileLineByHostname(hostname string) error {
 	h.Lock()
 	defer h.Unlock()
 
@@ -518,8 +518,8 @@ func (h *HostsFile) CommentByHostname(hostname string) error {
 	return ErrHostnameNotFound
 }
 
-//UncommentByRow set the IsCommented bit for the given row to false
-func (h *HostsFile) UncommentByRow(row int) error {
+//UncommentHostsFileLineByRow set the IsCommented bit for the given row to false
+func (h *HostsFile) UncommentHostsFileLineByRow(row int) error {
 	h.Lock()
 	defer h.Unlock()
 
@@ -539,8 +539,8 @@ func (h *HostsFile) UncommentByRow(row int) error {
 	return ErrUnknown
 }
 
-//UncommentByIP set the IsCommented bit for the given address to false
-func (h *HostsFile) UncommentByIP(ip net.IP) error {
+//UncommentHostsFileLineByIP set the IsCommented bit for the given address to false
+func (h *HostsFile) UncommentHostsFileLineByIP(ip net.IP) error {
 	h.Lock()
 	defer h.Unlock()
 
@@ -558,15 +558,15 @@ func (h *HostsFile) UncommentByIP(ip net.IP) error {
 	return ErrNotAnAddressLine
 }
 
-//UncommentByAddress set the IsCommented bit for the given address as string to false
-func (h *HostsFile) UncommentByAddress(address string) error {
+//UncommentHostsFileLineByAddress set the IsCommented bit for the given address as string to false
+func (h *HostsFile) UncommentHostsFileLineByAddress(address string) error {
 	ip := net.ParseIP(address)
 
-	return h.UncommentByIP(ip)
+	return h.UncommentHostsFileLineByIP(ip)
 }
 
-//UncommentByHostname set the IsCommented bit for the given hostname to false
-func (h *HostsFile) UncommentByHostname(hostname string) error {
+//UncommentHostsFileLineByHostname set the IsCommented bit for the given hostname to false
+func (h *HostsFile) UncommentHostsFileLineByHostname(hostname string) error {
 	h.Lock()
 	defer h.Unlock()
 
