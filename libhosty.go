@@ -703,6 +703,8 @@ func (h *HostsFile) CommentHostsFileLinesByHostnameAsRegexp(hostname string) {
 			if reg.MatchString(hn) {
 				if !h.HostsFileLines[idx].IsCommented {
 					h.HostsFileLines[idx].IsCommented = true
+
+					h.HostsFileLines[idx].Raw = h.RenderHostsFileLine(idx)
 					continue
 				}
 			}
@@ -832,6 +834,8 @@ func (h *HostsFile) UncommentHostsFileLinesByHostnameAsRegexp(hostname string) {
 			if reg.MatchString(hn) {
 				if h.HostsFileLines[idx].IsCommented {
 					h.HostsFileLines[idx].IsCommented = false
+
+					h.HostsFileLines[idx].Raw = h.RenderHostsFileLine(idx)
 					continue
 				}
 			}
