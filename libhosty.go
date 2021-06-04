@@ -275,7 +275,7 @@ func (h *HostsFile) RenderHostsFile() string {
 //RenderHostsFileLine render and returns the given hosts line with the lineFormatter() routine
 func (h *HostsFile) RenderHostsFileLine(row int) string {
 	// iterate to find the row to render
-	if len(h.HostsFileLines) < row {
+	if len(h.HostsFileLines) <= row {
 		return lineFormatter(h.HostsFileLines[row])
 	}
 
@@ -552,10 +552,12 @@ func (h *HostsFile) CommentHostsFileLineByRow(row int) error {
 	h.Lock()
 	defer h.Unlock()
 
-	if row <= len(h.HostsFileLines) {
+	if len(h.HostsFileLines) <= row {
 		if h.HostsFileLines[row].Type == LineTypeAddress {
 			if !h.HostsFileLines[row].IsCommented {
 				h.HostsFileLines[row].IsCommented = true
+
+				h.HostsFileLines[row].Raw = h.RenderHostsFileLine(row)
 				return nil
 			}
 
@@ -578,6 +580,7 @@ func (h *HostsFile) CommentHostsFileLineByIP(ip net.IP) error {
 			if !h.HostsFileLines[idx].IsCommented {
 				h.HostsFileLines[idx].IsCommented = true
 
+				h.HostsFileLines[idx].Raw = h.RenderHostsFileLine(idx)
 				return nil
 			}
 
@@ -596,6 +599,8 @@ func (h *HostsFile) CommentHostsFileLinesByIP(ip net.IP) {
 		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
 			if !h.HostsFileLines[idx].IsCommented {
 				h.HostsFileLines[idx].IsCommented = true
+
+				h.HostsFileLines[idx].Raw = h.RenderHostsFileLine(idx)
 			}
 		}
 	}
@@ -623,6 +628,8 @@ func (h *HostsFile) CommentHostsFileLineByHostname(hostname string) error {
 			if hn == hostname {
 				if !h.HostsFileLines[idx].IsCommented {
 					h.HostsFileLines[idx].IsCommented = true
+
+					h.HostsFileLines[idx].Raw = h.RenderHostsFileLine(idx)
 					return nil
 				}
 
@@ -643,6 +650,8 @@ func (h *HostsFile) CommentHostsFileLinesByHostname(hostname string) {
 			if hn == hostname {
 				if !h.HostsFileLines[idx].IsCommented {
 					h.HostsFileLines[idx].IsCommented = true
+
+					h.HostsFileLines[idx].Raw = h.RenderHostsFileLine(idx)
 				}
 			}
 		}
@@ -658,6 +667,8 @@ func (h *HostsFile) UncommentHostsFileLineByRow(row int) error {
 		if h.HostsFileLines[row].Type == LineTypeAddress {
 			if h.HostsFileLines[row].IsCommented {
 				h.HostsFileLines[row].IsCommented = false
+
+				h.HostsFileLines[row].Raw = h.RenderHostsFileLine(row)
 				return nil
 			}
 
@@ -679,6 +690,8 @@ func (h *HostsFile) UncommentHostsFileLineByIP(ip net.IP) error {
 		if net.IP.Equal(ip, hfl.Address) {
 			if h.HostsFileLines[idx].IsCommented {
 				h.HostsFileLines[idx].IsCommented = false
+
+				h.HostsFileLines[idx].Raw = h.RenderHostsFileLine(idx)
 				return nil
 			}
 
@@ -697,6 +710,8 @@ func (h *HostsFile) UncommentHostsFileLinesByIP(ip net.IP) {
 		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
 			if h.HostsFileLines[idx].IsCommented {
 				h.HostsFileLines[idx].IsCommented = false
+
+				h.HostsFileLines[idx].Raw = h.RenderHostsFileLine(idx)
 			}
 		}
 	}
@@ -724,6 +739,8 @@ func (h *HostsFile) UncommentHostsFileLineByHostname(hostname string) error {
 			if hn == hostname {
 				if h.HostsFileLines[idx].IsCommented {
 					h.HostsFileLines[idx].IsCommented = false
+
+					h.HostsFileLines[idx].Raw = h.RenderHostsFileLine(idx)
 					return nil
 				}
 
@@ -744,6 +761,8 @@ func (h *HostsFile) UncommentHostsFileLinesByHostname(hostname string) {
 			if hn == hostname {
 				if h.HostsFileLines[idx].IsCommented {
 					h.HostsFileLines[idx].IsCommented = false
+
+					h.HostsFileLines[idx].Raw = h.RenderHostsFileLine(idx)
 				}
 			}
 		}
