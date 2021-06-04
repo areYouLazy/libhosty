@@ -275,7 +275,7 @@ func (h *HostsFile) RenderHostsFile() string {
 //RenderHostsFileLine render and returns the given hosts line with the lineFormatter() routine
 func (h *HostsFile) RenderHostsFileLine(row int) string {
 	// iterate to find the row to render
-	if len(h.HostsFileLines) <= row {
+	if len(h.HostsFileLines) > row {
 		return lineFormatter(h.HostsFileLines[row])
 	}
 
