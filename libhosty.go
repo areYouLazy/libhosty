@@ -381,7 +381,7 @@ func (h *HostsFile) RemoveHostsFileLineByHostname(hostname string) {
 	}
 }
 
-func (h *HostsFile) RemoveHostsFileLineByHostnameAsRegexp(hostname string) {
+func (h *HostsFile) RemoveHostsFileLinesByHostnameAsRegexp(hostname string) {
 	h.Lock()
 	defer h.Unlock()
 
