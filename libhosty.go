@@ -275,10 +275,8 @@ func (h *HostsFile) RenderHostsFile() string {
 //RenderHostsFileLine render and returns the given hosts line with the lineFormatter() routine
 func (h *HostsFile) RenderHostsFileLine(row int) string {
 	// iterate to find the row to render
-	for idx, hfl := range h.HostsFileLines {
-		if idx == row {
-			return lineFormatter(hfl)
-		}
+	if len(h.HostsFileLines) < row {
+		return lineFormatter(h.HostsFileLines[row])
 	}
 
 	return ""
@@ -579,6 +577,7 @@ func (h *HostsFile) CommentHostsFileLineByIP(ip net.IP) error {
 		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
 			if !h.HostsFileLines[idx].IsCommented {
 				h.HostsFileLines[idx].IsCommented = true
+
 				return nil
 			}
 
