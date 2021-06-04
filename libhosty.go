@@ -159,7 +159,8 @@ func NewHostsFileConfig(path string) (*HostsFileConfig, error) {
 	var hc *HostsFileConfig
 
 	// ensure custom path exists
-	if fh, err := os.Stat(path); os.IsExist(err) {
+	// https://stackoverflow.com/questions/12518876/how-to-check-if-a-file-exists-in-go
+	if fh, err := os.Stat(path); err == nil {
 		// eusure custom path points to a file (not a directory)
 		if !fh.IsDir() {
 			hc = &HostsFileConfig{
