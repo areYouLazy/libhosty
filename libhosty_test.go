@@ -53,11 +53,6 @@ func TestNewHostsFileConfig(t *testing.T) {
 		t.Fatalf("should have %q got %q", "/etc/hosts", hc.FilePath)
 	}
 
-	hc, err = NewHostsFileConfig("/etc/passwd")
-	if err == nil && hc.FilePath != "/etc/hosts" {
-		t.Fatalf("should have error or default hostsConfig")
-	}
-
 	hc, err = NewHostsFileConfig("/etc/hosts")
 	if err != nil {
 		t.Fatal(err)
