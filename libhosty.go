@@ -552,7 +552,7 @@ func (h *HostsFile) CommentHostsFileLineByRow(row int) error {
 	h.Lock()
 	defer h.Unlock()
 
-	if len(h.HostsFileLines) <= row {
+	if len(h.HostsFileLines) > row {
 		if h.HostsFileLines[row].Type == LineTypeAddress {
 			if !h.HostsFileLines[row].IsCommented {
 				h.HostsFileLines[row].IsCommented = true
@@ -663,7 +663,7 @@ func (h *HostsFile) UncommentHostsFileLineByRow(row int) error {
 	h.Lock()
 	defer h.Unlock()
 
-	if row <= len(h.HostsFileLines) {
+	if len(h.HostsFileLines) > row {
 		if h.HostsFileLines[row].Type == LineTypeAddress {
 			if h.HostsFileLines[row].IsCommented {
 				h.HostsFileLines[row].IsCommented = false
