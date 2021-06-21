@@ -18,16 +18,16 @@ func lineFormatter(hfl HostsFileLine) string {
 	if hfl.IsCommented {
 		// check if there's a comment for that line
 		if len(hfl.Comment) > 0 {
-			return fmt.Sprintf("# %-16s\t%s\t#%s", hfl.Address, strings.Join(hfl.Hostnames, " "), hfl.Comment)
+			return fmt.Sprintf("# %-16s %s #%s", hfl.Address, strings.Join(hfl.Hostnames, " "), hfl.Comment)
 		}
 
-		return fmt.Sprintf("# %-16s\t%s", hfl.Address, strings.Join(hfl.Hostnames, " "))
+		return fmt.Sprintf("# %-16s %s", hfl.Address, strings.Join(hfl.Hostnames, " "))
 	}
 
 	// return the actual hosts entry
 	if len(hfl.Comment) > 0 {
-		return fmt.Sprintf("%-16s\t%s\t#%s", hfl.Address, strings.Join(hfl.Hostnames, " "), hfl.Comment)
+		return fmt.Sprintf("%-16s %s #%s", hfl.Address, strings.Join(hfl.Hostnames, " "), hfl.Comment)
 	}
 
-	return fmt.Sprintf("%-16s\t%s", hfl.Address, strings.Join(hfl.Hostnames, " "))
+	return fmt.Sprintf("%-16s %s", hfl.Address, strings.Join(hfl.Hostnames, " "))
 }
