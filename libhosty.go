@@ -324,34 +324,31 @@ func (h *HostsFile) SaveHostsFileAs(path string) error {
 
 //RemoveHostsFileLineByRow remove row at given index from HostsFileLines
 func (h *HostsFile) RemoveHostsFileLineByRow(row int) {
-	h.Lock()
-	defer h.Unlock()
-
 	// prevent out-of-index
 	if row < len(h.HostsFileLines) {
+		h.Lock()
 		h.HostsFileLines = append(h.HostsFileLines[:row], h.HostsFileLines[row+1:]...)
+		h.Unlock()
 	}
 }
 
 func (h *HostsFile) RemoveHostsFileLineByIP(ip net.IP) {
-	h.Lock()
-	defer h.Unlock()
-
 	for idx := range h.HostsFileLines {
 		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
+			h.Lock()
 			h.HostsFileLines = append(h.HostsFileLines[:idx], h.HostsFileLines[idx+1:]...)
+			h.Unlock()
 			return
 		}
 	}
 }
 
 func (h *HostsFile) RemoveHostsFileLinesByIP(ip net.IP) {
-	h.Lock()
-	defer h.Unlock()
-
 	for idx := range h.HostsFileLines {
 		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
+			h.Lock()
 			h.HostsFileLines = append(h.HostsFileLines[:idx], h.HostsFileLines[idx+1:]...)
+			h.Unlock()
 		}
 	}
 }
@@ -369,14 +366,13 @@ func (h *HostsFile) RemoveHostsFileLinesByAddress(address string) {
 }
 
 func (h *HostsFile) RemoveHostsFileLineByHostname(hostname string) {
-	h.Lock()
-	defer h.Unlock()
-
 	for idx := range h.HostsFileLines {
 		if h.HostsFileLines[idx].Type == LineTypeAddress {
 			for _, hn := range h.HostsFileLines[idx].Hostnames {
 				if hn == hostname {
+					h.Lock()
 					h.HostsFileLines = append(h.HostsFileLines[:idx], h.HostsFileLines[idx+1:]...)
+					h.Unlock()
 					return
 				}
 			}
@@ -387,16 +383,15 @@ func (h *HostsFile) RemoveHostsFileLineByHostname(hostname string) {
 // https://gist.github.com/siburu/09d28fb93aec5706502c
 
 func (h *HostsFile) RemoveHostsFileLinesByHostnameAsRegexp(hostname string) {
-	h.Lock()
-	defer h.Unlock()
-
 	reg := regexp.MustCompile(hostname)
 
 	for idx := len(h.HostsFileLines) - 1; idx >= 0; idx-- {
 		if h.HostsFileLines[idx].Type == LineTypeAddress {
 			for _, hn := range h.HostsFileLines[idx].Hostnames {
 				if reg.MatchString(hn) {
+					h.Lock()
 					h.HostsFileLines = append(h.HostsFileLines[:idx], h.HostsFileLines[idx+1:]...)
+					h.Unlock()
 					continue
 				}
 			}
@@ -405,14 +400,13 @@ func (h *HostsFile) RemoveHostsFileLinesByHostnameAsRegexp(hostname string) {
 }
 
 func (h *HostsFile) RemoveHostsFileLinesByHostname(hostname string) {
-	h.Lock()
-	defer h.Unlock()
-
 	for idx := len(h.HostsFileLines) - 1; idx >= 0; idx-- {
 		if h.HostsFileLines[idx].Type == LineTypeAddress {
 			for _, hn := range h.HostsFileLines[idx].Hostnames {
 				if hn == hostname {
+					h.Lock()
 					h.HostsFileLines = append(h.HostsFileLines[:idx], h.HostsFileLines[idx+1:]...)
+					h.Unlock()
 					continue
 				}
 			}
