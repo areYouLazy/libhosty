@@ -333,22 +333,18 @@ func (h *HostsFile) RemoveHostsFileLineByRow(row int) {
 }
 
 func (h *HostsFile) RemoveHostsFileLineByIP(ip net.IP) {
-	for idx := range h.HostsFileLines {
+	for idx := len(h.HostsFileLines) - 1; idx >= 0; idx-- {
 		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
-			h.Lock()
-			h.HostsFileLines = append(h.HostsFileLines[:idx], h.HostsFileLines[idx+1:]...)
-			h.Unlock()
+			h.RemoveHostsFileLineByRow(idx)
 			return
 		}
 	}
 }
 
 func (h *HostsFile) RemoveHostsFileLinesByIP(ip net.IP) {
-	for idx := range h.HostsFileLines {
+	for idx := len(h.HostsFileLines) - 1; idx >= 0; idx-- {
 		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
-			h.Lock()
-			h.HostsFileLines = append(h.HostsFileLines[:idx], h.HostsFileLines[idx+1:]...)
-			h.Unlock()
+			h.RemoveHostsFileLineByRow(idx)
 		}
 	}
 }
@@ -366,13 +362,11 @@ func (h *HostsFile) RemoveHostsFileLinesByAddress(address string) {
 }
 
 func (h *HostsFile) RemoveHostsFileLineByHostname(hostname string) {
-	for idx := range h.HostsFileLines {
+	for idx := len(h.HostsFileLines) - 1; idx >= 0; idx-- {
 		if h.HostsFileLines[idx].Type == LineTypeAddress {
 			for _, hn := range h.HostsFileLines[idx].Hostnames {
 				if hn == hostname {
-					h.Lock()
-					h.HostsFileLines = append(h.HostsFileLines[:idx], h.HostsFileLines[idx+1:]...)
-					h.Unlock()
+					h.RemoveHostsFileLineByRow(idx)
 					return
 				}
 			}
