@@ -380,8 +380,6 @@ func (h *HostsFile) RemoveHostsFileLineByHostname(hostname string) {
 	}
 }
 
-// https://gist.github.com/siburu/09d28fb93aec5706502c
-
 func (h *HostsFile) RemoveHostsFileLinesByHostnameAsRegexp(hostname string) {
 	reg := regexp.MustCompile(hostname)
 
@@ -400,9 +398,7 @@ func (h *HostsFile) RemoveHostsFileLinesByHostname(hostname string) {
 		if h.HostsFileLines[idx].Type == LineTypeAddress {
 			for _, hn := range h.HostsFileLines[idx].Hostnames {
 				if hn == hostname {
-					h.Lock()
-					h.HostsFileLines = append(h.HostsFileLines[:idx], h.HostsFileLines[idx+1:]...)
-					h.Unlock()
+					h.RemoveHostsFileLineByRow(idx)
 					continue
 				}
 			}
