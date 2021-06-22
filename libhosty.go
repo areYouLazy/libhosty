@@ -392,7 +392,6 @@ func (h *HostsFile) RemoveHostsFileLinesByHostnameAsRegexp(hostname string) {
 		for _, hn := range h.HostsFileLines[idx].Hostnames {
 			if reg.MatchString(hn) {
 				h.HostsFileLines = append(h.HostsFileLines[:idx], h.HostsFileLines[idx+1:]...)
-				continue
 			}
 		}
 	}
