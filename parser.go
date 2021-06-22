@@ -105,5 +105,8 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 		curLine.Type = LineTypeUnknown
 	}
 
+	// normalize slice
+	hostsFileLines = hostsFileLines[:]
+
 	return hostsFileLines, nil
 }
