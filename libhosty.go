@@ -184,6 +184,19 @@ func NewHostsFileConfig(path string) (*HostsFileConfig, error) {
 	return hc, nil
 }
 
+//GetHostsFileLines returns every address row
+func (h *HostsFile) GetHostsFileLines() []*HostsFileLine {
+	var hfl []*HostsFileLine
+
+	for idx := range h.HostsFileLines {
+		if h.HostsFileLines[idx].Type == LineTypeAddress {
+			hfl = append(hfl, h.GetHostsFileLineByRow(idx))
+		}
+	}
+
+	return hfl
+}
+
 //GetHostsFileLineByRow returns a ponter to the given HostsFileLine row
 func (h *HostsFile) GetHostsFileLineByRow(row int) *HostsFileLine {
 	return &h.HostsFileLines[row]
