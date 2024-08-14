@@ -53,9 +53,6 @@ type HostsFileLine struct {
 	//Address is a net.IP representation of the address
 	Address net.IP
 
-	//Parts is a slice of the line splitted by '#'
-	Parts []string
-
 	//Hostnames is a slice of hostnames for the relative IP
 	Hostnames []string
 
@@ -67,9 +64,6 @@ type HostsFileLine struct {
 
 	//IsCommented to know if the current ADDRESS line is commented out (starts with '#')
 	IsCommented bool
-
-	//trimed is a trimed version (no spaces before and after) of the line
-	trimed string
 }
 
 // HostsFile is a reference for the hosts file configuration and lines
