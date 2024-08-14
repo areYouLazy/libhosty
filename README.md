@@ -12,13 +12,15 @@ libhosty is a pure golang library to manipulate the hosts file. It is inspired b
 
 ## Table of Contents
 
-* [Main Features](#Main-Features)
-* [Installation](#Installation)
-* [Usage](#Usage)
-* [Contributing](#Contributing)
-  * [Templates](#Templates)
-* [Credits](#Credits)
-* [License](#License)
+- [Description](#description)
+- [Table of Contents](#table-of-contents)
+- [Main Features](#main-features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+  - [Templates](#templates)
+- [Credits](#credits)
+- [License](#license)
 
 ## Main Features
 
@@ -57,15 +59,12 @@ package main
 import "github.com/areYouLazy/libhosty"
 
 func main() {
-    //you can define a custom config object
-    // and use it to initialize libhosty with a custom hosts file
-    //
-    //cnf, _ := libhosty.NewHostsFileConfig("/home/sonica/hosts-export.txt")
-    //hfl, _ := libhosty.InitWithConfig(cnf)
+    //you can initialize libhosty with a custom hosts file
+    //cnf, _ := libhosty.Init("/home/sonica/hosts-export.txt")
     
-    //or initialize libhosty that will automatically try to loads
-    // then default hosts file for your OS
-    hfl, _ := libhosty.Init()
+    // an empty path will force libhosty to try to load
+    // the default hosts file based on runtime.GOOS
+    hfl, _ := libhosty.Init("")
     
     //add an empty line
     hfl.AddEmptyFileLine()
