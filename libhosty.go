@@ -4,9 +4,7 @@ package libhosty
 import (
 	"net"
 	"os"
-	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 	"sync"
 )
@@ -90,15 +88,28 @@ func Init(path string) (*HostsFile, error) {
 	var hostsFileLines []HostsFileLine
 	var err error
 
+	// use custom path if provided
+	// if not, check for glibc env variable
+	// if not, go with the default file path
 	if path != "" {
 		hostsFileLines, err = ParseHostsFile(path)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		hostsFileLines, err = ParseHostsFile(GetOSHostsFilePath())
-		if err != nil {
-			return nil, err
+		// check if we have the glibc HOSTALIASES env variable defined
+		fpath := os.Getenv("HOSTALIASES")
+		if fpath != "" {
+			hostsFileLines, err = ParseHostsFile(fpath)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			// fallback to default location
+			hostsFileLines, err = ParseHostsFile(GetOSHostsFilePath())
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -113,15 +124,6 @@ func Init(path string) (*HostsFile, error) {
 
 	//return HostsFile
 	return hf, nil
-}
-
-func GetOSHostsFilePath() string {
-	switch runtime.GOOS {
-	case "windows":
-		return filepath.Join(windowsFilePath, hostsFileName)
-	default:
-		return filepath.Join(unixFilePath, hostsFileName)
-	}
 }
 
 // GetHostsFileLines returns every address row
