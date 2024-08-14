@@ -49,7 +49,8 @@ and pull the library
 
 ## Usage
 
-To use the library, just import it and call the `Init()` method.
+To use the library, just import it and call the `Init(path string)` method.
+If `path` is empty, libhosty relies on the `runtime.GOOS` result to load OS default hosts file
 
 Note: This code doesn't handle errors for readability purposes, but you SHOULD!
 
