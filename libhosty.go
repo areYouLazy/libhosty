@@ -138,21 +138,7 @@ func (h *HostsFile) GetHostsFileLineByRow(row int) *HostsFileLine {
 	return &h.HostsFileLines[row]
 }
 
-// GetHostsFileLineByIP returns the index of the line and a ponter to the given HostsFileLine line
-func (h *HostsFile) GetHostsFileLineByIP(ip net.IP) (int, *HostsFileLine) {
-	if ip == nil {
-		return -1, nil
-	}
-
-	for idx := range h.HostsFileLines {
-		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
-			return idx, &h.HostsFileLines[idx]
-		}
-	}
-
-	return -1, nil
-}
-
+// GetHostsFileLinesByIP returns every line that maches a given IP
 func (h *HostsFile) GetHostsFileLinesByIP(ip net.IP) []*HostsFileLine {
 	if ip == nil {
 		return nil
@@ -169,30 +155,13 @@ func (h *HostsFile) GetHostsFileLinesByIP(ip net.IP) []*HostsFileLine {
 	return hfl
 }
 
-// GetHostsFileLineByAddress returns the index of the line and a ponter to the given HostsFileLine line
-func (h *HostsFile) GetHostsFileLineByAddress(address string) (int, *HostsFileLine) {
-	ip := net.ParseIP(address)
-	return h.GetHostsFileLineByIP(ip)
-}
-
+// GetHostsFileLinesByAddress returns every line that maches a given IP as String
 func (h *HostsFile) GetHostsFileLinesByAddress(address string) []*HostsFileLine {
 	ip := net.ParseIP(address)
 	return h.GetHostsFileLinesByIP(ip)
 }
 
-// GetHostsFileLineByHostname returns the index of the line and a ponter to the given HostsFileLine line
-func (h *HostsFile) GetHostsFileLineByHostname(hostname string) (int, *HostsFileLine) {
-	for idx := range h.HostsFileLines {
-		for _, hn := range h.HostsFileLines[idx].Hostnames {
-			if hn == hostname {
-				return idx, &h.HostsFileLines[idx]
-			}
-		}
-	}
-
-	return -1, nil
-}
-
+// GetHostsFileLinesByHostname returns every line that maches a given Hostname
 func (h *HostsFile) GetHostsFileLinesByHostname(hostname string) []*HostsFileLine {
 	hfl := make([]*HostsFileLine, 0)
 
@@ -208,10 +177,11 @@ func (h *HostsFile) GetHostsFileLinesByHostname(hostname string) []*HostsFileLin
 	return hfl
 }
 
-func (h *HostsFile) GetHostsFileLinesByHostnameAsRegexp(hostname string) []*HostsFileLine {
+// GetHostsFileLinesByRegexp returns every line that maches a given regexp
+func (h *HostsFile) GetHostsFileLinesByRegexp(pattern string) []*HostsFileLine {
 	hfl := make([]*HostsFileLine, 0)
 
-	reg := regexp.MustCompile(hostname)
+	reg := regexp.MustCompile(pattern)
 
 	for idx := range h.HostsFileLines {
 		for _, hn := range h.HostsFileLines[idx].Hostnames {
@@ -235,15 +205,7 @@ func (h *HostsFile) RemoveHostsFileLineByRow(row int) {
 	}
 }
 
-func (h *HostsFile) RemoveHostsFileLineByIP(ip net.IP) {
-	for idx := len(h.HostsFileLines) - 1; idx >= 0; idx-- {
-		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
-			h.RemoveHostsFileLineByRow(idx)
-			return
-		}
-	}
-}
-
+// RemoveHostFileLinesByIP remove every line that matches a given IP
 func (h *HostsFile) RemoveHostsFileLinesByIP(ip net.IP) {
 	for idx := len(h.HostsFileLines) - 1; idx >= 0; idx-- {
 		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
@@ -252,44 +214,14 @@ func (h *HostsFile) RemoveHostsFileLinesByIP(ip net.IP) {
 	}
 }
 
-func (h *HostsFile) RemoveHostsFileLineByAddress(address string) {
-	ip := net.ParseIP(address)
-
-	h.RemoveHostsFileLineByIP(ip)
-}
-
+// RemoveHostFileLinesByAddress remove every line that matches a given IP as String
 func (h *HostsFile) RemoveHostsFileLinesByAddress(address string) {
 	ip := net.ParseIP(address)
 
 	h.RemoveHostsFileLinesByIP(ip)
 }
 
-func (h *HostsFile) RemoveHostsFileLineByHostname(hostname string) {
-	for idx := len(h.HostsFileLines) - 1; idx >= 0; idx-- {
-		if h.HostsFileLines[idx].Type == LineTypeAddress {
-			for _, hn := range h.HostsFileLines[idx].Hostnames {
-				if hn == hostname {
-					h.RemoveHostsFileLineByRow(idx)
-					return
-				}
-			}
-		}
-	}
-}
-
-func (h *HostsFile) RemoveHostsFileLinesByHostnameAsRegexp(hostname string) {
-	reg := regexp.MustCompile(hostname)
-
-	for idx := len(h.HostsFileLines) - 1; idx >= 0; idx-- {
-		for _, hn := range h.HostsFileLines[idx].Hostnames {
-			if reg.MatchString(hn) {
-				h.RemoveHostsFileLineByRow(idx)
-				continue
-			}
-		}
-	}
-}
-
+// RemoveHostFileLinesByHostname remove every line that matches a given Hostname
 func (h *HostsFile) RemoveHostsFileLinesByHostname(hostname string) {
 	for idx := len(h.HostsFileLines) - 1; idx >= 0; idx-- {
 		if h.HostsFileLines[idx].Type == LineTypeAddress {
@@ -298,6 +230,20 @@ func (h *HostsFile) RemoveHostsFileLinesByHostname(hostname string) {
 					h.RemoveHostsFileLineByRow(idx)
 					continue
 				}
+			}
+		}
+	}
+}
+
+// RemoveHostFileLinesByRegexp remove every line that matches a given regexp
+func (h *HostsFile) RemoveHostsFileLinesByRegexp(pattern string) {
+	reg := regexp.MustCompile(pattern)
+
+	for idx := len(h.HostsFileLines) - 1; idx >= 0; idx-- {
+		for _, hn := range h.HostsFileLines[idx].Hostnames {
+			if reg.MatchString(hn) {
+				h.RemoveHostsFileLineByRow(idx)
+				continue
 			}
 		}
 	}
@@ -443,16 +389,21 @@ func (h *HostsFile) AddCommentFileLine(comment string) (int, *HostsFileLine, err
 	h.Lock()
 	defer h.Unlock()
 
+	idx := len(h.HostsFileLines)
+
 	hfl := HostsFileLine{
-		Type:    LineTypeComment,
-		Raw:     "# " + comment,
-		Comment: comment,
+		Number:      idx,
+		Type:        LineTypeComment,
+		Address:     []byte{},
+		Hostnames:   []string{},
+		Raw:         "# " + comment,
+		Comment:     comment,
+		IsCommented: false,
 	}
 
 	hfl.Raw = lineFormatter(hfl)
 
 	h.HostsFileLines = append(h.HostsFileLines, hfl)
-	idx := len(h.HostsFileLines) - 1
 	return idx, &h.HostsFileLines[idx], nil
 }
 
@@ -463,13 +414,19 @@ func (h *HostsFile) AddEmptyFileLine() (int, *HostsFileLine, error) {
 	h.Lock()
 	defer h.Unlock()
 
+	idx := len(h.HostsFileLines)
+
 	hfl := HostsFileLine{
-		Type: LineTypeEmpty,
-		Raw:  "",
+		Number:      idx,
+		Type:        LineTypeEmpty,
+		Address:     []byte{},
+		Hostnames:   []string{},
+		Raw:         "",
+		Comment:     "",
+		IsCommented: false,
 	}
 
 	h.HostsFileLines = append(h.HostsFileLines, hfl)
-	idx := len(h.HostsFileLines) - 1
 	return idx, &h.HostsFileLines[idx], nil
 }
 
@@ -496,27 +453,7 @@ func (h *HostsFile) CommentHostsFileLineByRow(row int) error {
 	return ErrUnknown
 }
 
-// CommentHostsFileLineByIP set the IsCommented bit for the given address to true
-func (h *HostsFile) CommentHostsFileLineByIP(ip net.IP) error {
-	h.Lock()
-	defer h.Unlock()
-
-	for idx := range h.HostsFileLines {
-		if net.IP.Equal(ip, h.HostsFileLines[idx].Address) {
-			if !h.HostsFileLines[idx].IsCommented {
-				h.HostsFileLines[idx].IsCommented = true
-
-				h.HostsFileLines[idx].Raw = h.RenderHostsFileLine(idx)
-				return nil
-			}
-
-			return ErrAlredyCommentedLine
-		}
-	}
-
-	return ErrAddressNotFound
-}
-
+// CommentHostsFileLinesByIP set IsCommented to true on every line that matches a given net.IP
 func (h *HostsFile) CommentHostsFileLinesByIP(ip net.IP) {
 	h.Lock()
 	defer h.Unlock()
@@ -532,41 +469,14 @@ func (h *HostsFile) CommentHostsFileLinesByIP(ip net.IP) {
 	}
 }
 
-// CommentHostsFileLineByAddress set the IsCommented bit for the given address as string to true
-func (h *HostsFile) CommentHostsFileLineByAddress(address string) error {
-	ip := net.ParseIP(address)
-
-	return h.CommentHostsFileLineByIP(ip)
-}
-
+// CommentHostsFileLinesByAddress set IsCommented to true on every line that matches a given net.IP
 func (h *HostsFile) CommentHostsFileLinesByAddress(address string) {
 	ip := net.ParseIP(address)
+
 	h.CommentHostsFileLinesByIP(ip)
 }
 
-// CommentHostsFileLineByHostname set the IsCommented bit for the given hostname to true
-func (h *HostsFile) CommentHostsFileLineByHostname(hostname string) error {
-	h.Lock()
-	defer h.Unlock()
-
-	for idx := range h.HostsFileLines {
-		for _, hn := range h.HostsFileLines[idx].Hostnames {
-			if hn == hostname {
-				if !h.HostsFileLines[idx].IsCommented {
-					h.HostsFileLines[idx].IsCommented = true
-
-					h.HostsFileLines[idx].Raw = h.RenderHostsFileLine(idx)
-					return nil
-				}
-
-				return ErrAlredyCommentedLine
-			}
-		}
-	}
-
-	return ErrHostnameNotFound
-}
-
+// CommentHostsFileLinesByHostname set IsCommented to true on every line that matches a given Hostname
 func (h *HostsFile) CommentHostsFileLinesByHostname(hostname string) {
 	h.Lock()
 	defer h.Unlock()
@@ -584,11 +494,12 @@ func (h *HostsFile) CommentHostsFileLinesByHostname(hostname string) {
 	}
 }
 
-func (h *HostsFile) CommentHostsFileLinesByHostnameAsRegexp(hostname string) {
+// CommentHostsFileLinesByRegexp set IsCommented to true on every line that matches a given regexp
+func (h *HostsFile) CommentHostsFileLinesByRegexp(pattern string) {
 	h.Lock()
 	defer h.Unlock()
 
-	reg := regexp.MustCompile(hostname)
+	reg := regexp.MustCompile(pattern)
 
 	for idx := range h.HostsFileLines {
 		for _, hn := range h.HostsFileLines[idx].Hostnames {
@@ -627,27 +538,7 @@ func (h *HostsFile) UncommentHostsFileLineByRow(row int) error {
 	return ErrUnknown
 }
 
-// UncommentHostsFileLineByIP set the IsCommented bit for the given address to false
-func (h *HostsFile) UncommentHostsFileLineByIP(ip net.IP) error {
-	h.Lock()
-	defer h.Unlock()
-
-	for idx, hfl := range h.HostsFileLines {
-		if net.IP.Equal(ip, hfl.Address) {
-			if h.HostsFileLines[idx].IsCommented {
-				h.HostsFileLines[idx].IsCommented = false
-
-				h.HostsFileLines[idx].Raw = h.RenderHostsFileLine(idx)
-				return nil
-			}
-
-			return ErrAlredyUncommentedLine
-		}
-	}
-
-	return ErrNotAnAddressLine
-}
-
+// UncommentHostsFileLinesByIP set IsCommented to false for every line that matches a given net.IP
 func (h *HostsFile) UncommentHostsFileLinesByIP(ip net.IP) {
 	h.Lock()
 	defer h.Unlock()
@@ -663,41 +554,13 @@ func (h *HostsFile) UncommentHostsFileLinesByIP(ip net.IP) {
 	}
 }
 
-// UncommentHostsFileLineByAddress set the IsCommented bit for the given address as string to false
-func (h *HostsFile) UncommentHostsFileLineByAddress(address string) error {
-	ip := net.ParseIP(address)
-
-	return h.UncommentHostsFileLineByIP(ip)
-}
-
+// UncommentHostsFileLinesByAddress set IsCommented to false for every line that matches a given net.IP as String
 func (h *HostsFile) UncommentHostsFileLinesByAddress(address string) {
 	ip := net.ParseIP(address)
 	h.UncommentHostsFileLinesByIP(ip)
 }
 
-// UncommentHostsFileLineByHostname set the IsCommented bit for the given hostname to false
-func (h *HostsFile) UncommentHostsFileLineByHostname(hostname string) error {
-	h.Lock()
-	defer h.Unlock()
-
-	for idx := range h.HostsFileLines {
-		for _, hn := range h.HostsFileLines[idx].Hostnames {
-			if hn == hostname {
-				if h.HostsFileLines[idx].IsCommented {
-					h.HostsFileLines[idx].IsCommented = false
-
-					h.HostsFileLines[idx].Raw = h.RenderHostsFileLine(idx)
-					return nil
-				}
-
-				return ErrAlredyUncommentedLine
-			}
-		}
-	}
-
-	return ErrHostnameNotFound
-}
-
+// UncommentHostsFileLinesByHostname set IsCommented to false for every line that matches a given Hostname
 func (h *HostsFile) UncommentHostsFileLinesByHostname(hostname string) {
 	h.Lock()
 	defer h.Unlock()
@@ -715,11 +578,12 @@ func (h *HostsFile) UncommentHostsFileLinesByHostname(hostname string) {
 	}
 }
 
-func (h *HostsFile) UncommentHostsFileLinesByHostnameAsRegexp(hostname string) {
+// UncommentHostsFileLinesByRegexp set IsCommented to false for every line that matches a given regexp
+func (h *HostsFile) UncommentHostsFileLinesByRegexp(pattern string) {
 	h.Lock()
 	defer h.Unlock()
 
-	reg := regexp.MustCompile(hostname)
+	reg := regexp.MustCompile(pattern)
 
 	for idx := range h.HostsFileLines {
 		for _, hn := range h.HostsFileLines[idx].Hostnames {
