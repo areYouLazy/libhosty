@@ -34,6 +34,7 @@ func TestNewHostsFileConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	switch runtime.GOOS {
 	case "windows":
 		if res := strings.Compare(hc.FilePath, "C:\\Windows\\System32\\drivers\\etc\\hosts"); res != 0 {
