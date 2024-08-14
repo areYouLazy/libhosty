@@ -62,7 +62,7 @@ func TestLineFormatter(t *testing.T) {
 		Address:     []byte{},
 		Hostnames:   []string{},
 		Raw:         "# Comment Line",
-		Comment:     "",
+		Comment:     "Comment Line",
 		IsCommented: false,
 	}
 	w = "# Comment line"

@@ -10,16 +10,16 @@ func (h *HostsFile) RestoreTemplate() bool {
 
 	switch runtime.GOOS {
 	case "windows":
-		hfl, _ = ParseHostsFileAsString(windowsHostsTemplate)
+		hfl, _ = ParseHostsFileFromString(windowsHostsTemplate)
 	case "docker":
-		hfl, _ = ParseHostsFileAsString(dockerDesktopTemplate)
+		hfl, _ = ParseHostsFileFromString(dockerDesktopTemplate)
 	case "linux|unix":
-		hfl, _ = ParseHostsFileAsString(linuxHostsTemplate)
+		hfl, _ = ParseHostsFileFromString(linuxHostsTemplate)
 	case "darwin":
-		hfl, _ = ParseHostsFileAsString(darwinHostsTemplate)
+		hfl, _ = ParseHostsFileFromString(darwinHostsTemplate)
 	default:
 		// hfl = nil
-		hfl, _ = ParseHostsFileAsString(linuxHostsTemplate)
+		hfl, _ = ParseHostsFileFromString(linuxHostsTemplate)
 	}
 
 	if hfl != nil {
@@ -38,16 +38,16 @@ func (h *HostsFile) RestoreNamedTemplate(template string) bool {
 
 	switch template {
 	case "windows":
-		hfl, _ = ParseHostsFileAsString(windowsHostsTemplate)
+		hfl, _ = ParseHostsFileFromString(windowsHostsTemplate)
 	case "docker":
-		hfl, _ = ParseHostsFileAsString(dockerDesktopTemplate)
+		hfl, _ = ParseHostsFileFromString(dockerDesktopTemplate)
 	case "linux|unix":
-		hfl, _ = ParseHostsFileAsString(linuxHostsTemplate)
+		hfl, _ = ParseHostsFileFromString(linuxHostsTemplate)
 	case "darwin":
-		hfl, _ = ParseHostsFileAsString(darwinHostsTemplate)
+		hfl, _ = ParseHostsFileFromString(darwinHostsTemplate)
 	default:
 		// hfl = nil
-		hfl, _ = ParseHostsFileAsString(linuxHostsTemplate)
+		hfl, _ = ParseHostsFileFromString(linuxHostsTemplate)
 	}
 
 	if hfl != nil {
@@ -66,16 +66,16 @@ func (h *HostsFile) AppendNamedTemplate(template string) bool {
 
 	switch template {
 	case "windows":
-		hfl, _ = ParseHostsFileAsString(windowsHostsTemplate)
+		hfl, _ = ParseHostsFileFromString(windowsHostsTemplate)
 	case "docker":
-		hfl, _ = ParseHostsFileAsString(dockerDesktopTemplate)
+		hfl, _ = ParseHostsFileFromString(dockerDesktopTemplate)
 	case "linux|unix":
-		hfl, _ = ParseHostsFileAsString(linuxHostsTemplate)
+		hfl, _ = ParseHostsFileFromString(linuxHostsTemplate)
 	case "darwin":
-		hfl, _ = ParseHostsFileAsString(darwinHostsTemplate)
+		hfl, _ = ParseHostsFileFromString(darwinHostsTemplate)
 	default:
 		// hfl = nil
-		hfl, _ = ParseHostsFileAsString(linuxHostsTemplate)
+		hfl, _ = ParseHostsFileFromString(linuxHostsTemplate)
 	}
 
 	if hfl != nil {

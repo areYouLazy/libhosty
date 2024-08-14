@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-//TestParseHostsFile implicitly tests parser()
+// TestParseHostsFile implicitly tests parser()
 // assuming the test is executed on a computer,
 // we should be able to load the default hosts file
 func TestParseHostsFile(t *testing.T) {
@@ -68,14 +68,14 @@ func TestParseHostsFile(t *testing.T) {
 	}
 }
 
-//TestParseHostsFileAsString test unknown line type
+// TestParseHostsFileFromString test unknown line type
 // actual parsing is already tested in TestParseHostsFile()
-func TestParseHostsFileAsString(t *testing.T) {
+func TestParseHostsFileFromString(t *testing.T) {
 	// define a custom hosts file with an address line and an invalid line"
 	var fakeHostsFile = `1.1.1.1 my.hosts.file # With Comment
 129dj120isdj12i0 1092jd 210dk`
 
-	hf, err := ParseHostsFileAsString(fakeHostsFile)
+	hf, err := ParseHostsFileFromString(fakeHostsFile)
 	if err != nil {
 		t.Fatalf("error parsing fakeHostsFile: %s", err)
 	}

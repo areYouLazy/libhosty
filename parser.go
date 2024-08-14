@@ -17,9 +17,9 @@ func ParseHostsFile(path string) ([]HostsFileLine, error) {
 	return parser(byteData)
 }
 
-// ParseHostsFileAsString parse a hosts file from a given string.
+// ParseHostsFileFromString parse a hosts file from a given string.
 // error is not nil if something goes wrong
-func ParseHostsFileAsString(stringData string) ([]HostsFileLine, error) {
+func ParseHostsFileFromString(stringData string) ([]HostsFileLine, error) {
 	bytesData := []byte(stringData)
 	return parser(bytesData)
 }
@@ -81,7 +81,18 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 			// try to parse 1st field as an ip address
 			// if address is nil this line is a comment
 			if address := net.ParseIP(rawLineParts[0]); address == nil {
+				comment := rawLine
+
+				// mark line as comment, normalize and save comment
 				curLine.Type = LineTypeComment
+
+				// since there can be more than one hash, remove those in excess
+				for !strings.HasPrefix(rawLine, "#") {
+					comment = strings.TrimPrefix(comment, "#")
+				}
+
+				// save comment
+				curLine.Comment = comment
 				continue
 			}
 
