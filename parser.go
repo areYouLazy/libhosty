@@ -108,16 +108,25 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 		// we should have at least 2 fields, the address at [0]
 		// and the 1st hostname at [1], other hostnames at [2:...]
 		if len(addressAndHostnames) > 1 {
+			// sanitize address
+			rawAddress := strings.TrimSpace(addressAndHostnames[0])
+
 			// parse address to ensure we have a valid address line
-			if address := net.ParseIP(addressAndHostnames[0]); address != nil {
+			if address := net.ParseIP(rawAddress); address != nil {
+				// set linetype as address and save it
 				curLine.Type = LineTypeAddress
 				curLine.Address = address
 
-				// lower case all
-				for _, p := range addressAndHostnames[1:] {
-					curLine.Hostnames = append(curLine.Hostnames, strings.ToLower(p))
+				// parse and lower case all hostnames
+				for _, hostname := range addressAndHostnames[1:] {
+					// sanitize hostname
+					rawHostname := strings.TrimSpace(hostname)
+
+					// add hostname to hostnames slice
+					curLine.Hostnames = append(curLine.Hostnames, strings.ToLower(rawHostname))
 				}
 
+				// we got a line, go on to the next one
 				continue
 			}
 		}
