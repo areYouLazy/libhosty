@@ -11,7 +11,7 @@ import (
 
 const (
 	//Version exposes library version
-	Version = "2.0.1"
+	Version = "3.0.0-alfa.1"
 )
 
 const (
