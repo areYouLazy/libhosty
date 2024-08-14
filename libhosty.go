@@ -4,6 +4,7 @@ package libhosty
 import (
 	"net"
 	"os"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -43,12 +44,6 @@ const (
 	LineTypeAddress LineType = 30
 )
 
-// HostsFileConfig defines parameters to find hosts file.
-// FilePath is the absolute path of the hosts file (filename included)
-type HostsFileConfig struct {
-	FilePath string
-}
-
 // HostsFileLine holds hosts file lines data
 type HostsFileLine struct {
 	//Number is the original line number
@@ -83,104 +78,50 @@ type HostsFileLine struct {
 type HostsFile struct {
 	sync.Mutex
 
-	//Config reference to a HostsConfig object
-	Config *HostsFileConfig
+	//Path is the file path and name
+	Path string
 
 	//HostsFileLines slice of HostsFileLine objects
 	HostsFileLines []HostsFileLine
 }
 
-// InitWithConfig returns a new instance of a hostsfile.
-// InitWithConfig is meant to be used with a custom conf file
-// however InitWithConfig() will fallback to Init() if conf is nill
-// You should use Init() to load hosts file from default location
-func InitWithConfig(conf *HostsFileConfig) (*HostsFile, error) {
-	var config *HostsFileConfig
+// Init returns a new instance of a hostsfile.
+func Init(path string) (*HostsFile, error) {
+	var hostsFileLines []HostsFileLine
 	var err error
 
-	if conf != nil {
-		config = conf
+	if path != "" {
+		hostsFileLines, err = ParseHostsFile(path)
+		if err != nil {
+			return nil, err
+		}
 	} else {
-		return Init()
+		hostsFileLines, err = ParseHostsFile(GetOSHostsFilePath())
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// allocate a new HostsFile object
 	hf := &HostsFile{
 		// use default configuration
-		Config: config,
+		Path: path,
 
 		// allocate a new slice of HostsFileLine objects
-		HostsFileLines: make([]HostsFileLine, 0),
-	}
-
-	// parse the hosts file and load file lines
-	hf.HostsFileLines, err = ParseHostsFile(hf.Config.FilePath)
-	if err != nil {
-		return nil, err
+		HostsFileLines: hostsFileLines,
 	}
 
 	//return HostsFile
 	return hf, nil
 }
 
-// Init returns a new instance of a hostsfile.
-func Init() (*HostsFile, error) {
-	// initialize hostsConfig
-	config, err := NewHostsFileConfig("")
-	if err != nil {
-		return nil, err
+func GetOSHostsFilePath() string {
+	switch runtime.GOOS {
+	case "windows":
+		return filepath.Join(windowsFilePath, hostsFileName)
+	default:
+		return filepath.Join(unixFilePath, hostsFileName)
 	}
-
-	// allocate a new HostsFile object
-	hf := &HostsFile{
-		// use default configuration
-		Config: config,
-
-		// allocate a new slice of HostsFileLine objects
-		HostsFileLines: make([]HostsFileLine, 0),
-	}
-
-	// parse the hosts file and load file lines
-	hf.HostsFileLines, err = ParseHostsFile(hf.Config.FilePath)
-	if err != nil {
-		return nil, err
-	}
-
-	//return HostsFile
-	return hf, nil
-}
-
-// NewHostsFileConfig loads hosts file based on environment.
-// NewHostsFileConfig initialize the default file path based
-// on the OS or from a given location if a custom path is provided
-func NewHostsFileConfig(path string) (*HostsFileConfig, error) {
-	// allocate hostsConfig
-	var hc *HostsFileConfig
-
-	// ensure custom path exists
-	// https://stackoverflow.com/questions/12518876/how-to-check-if-a-file-exists-in-go
-	if fh, err := os.Stat(path); err == nil {
-		// eusure custom path points to a file (not a directory)
-		if !fh.IsDir() {
-			hc = &HostsFileConfig{
-				FilePath: path,
-			}
-		}
-	} else {
-		// check os to construct default path
-		switch runtime.GOOS {
-		case "windows":
-			hc = &HostsFileConfig{
-				FilePath: windowsFilePath + hostsFileName,
-			}
-		default:
-			hc = &HostsFileConfig{
-				FilePath: unixFilePath + hostsFileName,
-			}
-		}
-	}
-
-	return hc, nil
 }
 
 // GetHostsFileLines returns every address row
@@ -316,7 +257,7 @@ func (h *HostsFile) RenderHostsFileLine(row int) string {
 // SaveHostsFile write hosts file to configured path.
 // error is not nil if something goes wrong
 func (h *HostsFile) SaveHostsFile() error {
-	return h.SaveHostsFileAs(h.Config.FilePath)
+	return h.SaveHostsFileAs(h.Path)
 }
 
 // SaveHostsFileAs write hosts file to the given path.

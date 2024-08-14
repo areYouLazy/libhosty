@@ -2,18 +2,16 @@ package libhosty
 
 import (
 	"net"
-	"runtime"
 	"strings"
 	"testing"
 )
 
 var hf *HostsFile
-var hc *HostsFileConfig
 
 func TestInit(t *testing.T) {
 	var err error
 
-	hf, err = Init()
+	hf, err = Init("")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -24,63 +22,6 @@ func TestInit(t *testing.T) {
 
 	if len(hf.HostsFileLines) <= 0 {
 		t.Fatalf("we should have at least 1 line")
-	}
-}
-
-func TestNewHostsFileConfig(t *testing.T) {
-	var err error
-
-	hc, err = NewHostsFileConfig("")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	switch runtime.GOOS {
-	case "windows":
-		if res := strings.Compare(hc.FilePath, "C:\\Windows\\System32\\drivers\\etc\\hosts"); res != 0 {
-			t.Fatalf("error in hostsConfig path: wants %q got %q", "C:\\Windows\\System32\\drivers\\etc\\hosts", hc.FilePath)
-		}
-	default:
-		if res := strings.Compare(hc.FilePath, "/etc/hosts"); res != 0 {
-			t.Fatalf("error in hostsConfig path: wants %q got %q", "/etc/hosts", hc.FilePath)
-		}
-	}
-
-	hc, err := NewHostsFileConfig("/etc")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if res := strings.Compare(hf.Config.FilePath, "/etc/hosts"); res != 0 {
-		t.Fatalf("should have %q got %q", "/etc/hosts", hc.FilePath)
-	}
-
-	hc, err = NewHostsFileConfig("/etc/hosts")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if res := strings.Compare(hc.FilePath, "/etc/hosts"); res != 0 {
-		t.Fatalf("error in hostsConfig path: wants %q got %q", "/etc/hosts", hc.FilePath)
-	}
-}
-
-func TestInitWithConf(t *testing.T) {
-	var err error
-
-	//test with conf = nil
-	hf, err = InitWithConfig(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// test with conf
-	hf, err = InitWithConfig(hc)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if res := strings.Compare(hf.Config.FilePath, "/etc/hosts"); res != 0 {
-		t.Fatalf("error in InitWithConfig path: wants %q got %q", "/etc/hosts", hc.FilePath)
 	}
 }
 
