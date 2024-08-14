@@ -12,7 +12,7 @@ import (
 
 const (
 	//Version exposes library version
-	Version = "2.0"
+	Version = "2.0.1"
 )
 
 const (
