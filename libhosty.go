@@ -356,11 +356,16 @@ func (h *HostsFile) AddHostsFileLine(ipRaw, fqdnRaw, comment string) (int, *Host
 			}
 		}
 
+		// get index
+		idx := len(h.HostsFileLines)
+
 		// at this point we need to create new host line
 		hfl := HostsFileLine{
+			Number:      idx,
 			Type:        LineTypeAddress,
 			Address:     ip,
 			Hostnames:   []string{hostname},
+			Raw:         "",
 			Comment:     comment,
 			IsCommented: false,
 		}
@@ -370,9 +375,6 @@ func (h *HostsFile) AddHostsFileLine(ipRaw, fqdnRaw, comment string) (int, *Host
 
 		// append to hosts
 		h.HostsFileLines = append(h.HostsFileLines, hfl)
-
-		// get index
-		idx := len(h.HostsFileLines) - 1
 
 		// return created entry
 		return idx, &h.HostsFileLines[idx], nil

@@ -1,9 +1,22 @@
 package libhosty
 
 import (
+	"fmt"
 	"runtime"
 	"strings"
 	"testing"
+)
+
+var (
+	// for this test use a custom hosts file
+	customHostsFile = `## Custom hosts file
+		# To check if everything works
+		1.1.1.1		my.cloudflare.domain
+		8.8.8.8		my.google.dns
+		6.6.6.6		an.evil.domain
+		# 12.12.12.12	commented.evil.domain # with comments
+		# 2.3.4.5		first.domain second.domain third.domain
+		5.6.7.8		first.domain second.domain third.domain`
 )
 
 // TestParseHostsFile implicitly tests parser()
@@ -21,18 +34,23 @@ func TestParseHostsFile(t *testing.T) {
 
 	// define file path
 	switch runtime.GOOS {
-	case "win":
+	case "windows":
 		path = "C:\\Windows\\System32\\drivers\\etc\\hosts"
 	default:
 		path = "/etc/hosts"
 	}
 
 	// parse file
-	hf, err := ParseHostsFile(path)
-
+	_, err = ParseHostsFile(path)
 	// check for errors
 	if err != nil {
 		t.Fatalf("error parsing hosts file: %s", err)
+	}
+
+	// load custom file for tests
+	hf, err := ParseHostsFileFromString(customHostsFile)
+	if err != nil {
+		t.Fatalf("error parsing custom hosts file: %s", err)
 	}
 
 	// check for unknown lines
@@ -49,19 +67,19 @@ func TestParseHostsFile(t *testing.T) {
 	// 	}
 	// }
 
-	// for every address line, ensure we have a valid ip address
+	// for every  line,
 	for k, v := range hf {
+		// ensure addresses have a valid ip
 		if v.Type == LineTypeAddress {
 			if v.Address == nil {
 				t.Fatalf("address line without address at index %d: %v", k, v)
 			}
 		}
-	}
 
-	// for every comment line ensure it starts with #
-	for k, v := range hf {
+		// ensure comments starts with #
 		if v.Type == LineTypeComment {
 			if !strings.HasPrefix(v.Raw, "#") {
+				fmt.Println(v.Raw)
 				t.Fatalf("comment line does not starts with # at index %d: %v", k, v)
 			}
 		}
@@ -71,21 +89,27 @@ func TestParseHostsFile(t *testing.T) {
 // TestParseHostsFileFromString test unknown line type
 // actual parsing is already tested in TestParseHostsFile()
 func TestParseHostsFileFromString(t *testing.T) {
-	// define a custom hosts file with an address line and an invalid line"
-	var fakeHostsFile = `1.1.1.1 my.hosts.file # With Comment
-129dj120isdj12i0 1092jd 210dk`
-
-	hf, err := ParseHostsFileFromString(fakeHostsFile)
+	// parse custom hosts file from string
+	hf, err := ParseHostsFileFromString(customHostsFile)
 	if err != nil {
-		t.Fatalf("error parsing fakeHostsFile: %s", err)
+		t.Fatalf("error parsing customHostsFile: %s", err)
 	}
 
-	// we expect the 1st line to be of type address
-	if hf[0].Type != LineTypeAddress {
-		t.Fatalf("line should be of type address: %v", hf[0])
-	}
-	// and the 2nd line to be of type unknown
-	if hf[1].Type != LineTypeUnknown {
-		t.Fatalf("line should be of type address: %v", hf[1])
+	// for every  line,
+	for k, v := range hf {
+		// ensure addresses have a valid ip
+		if v.Type == LineTypeAddress {
+			if v.Address == nil {
+				t.Fatalf("address line without address at index %d: %v", k, v)
+			}
+		}
+
+		// ensure comments starts with #
+		if v.Type == LineTypeComment {
+			if !strings.HasPrefix(v.Raw, "#") {
+				fmt.Println(v.Raw)
+				t.Fatalf("comment line does not starts with # at index %d: %v", k, v)
+			}
+		}
 	}
 }

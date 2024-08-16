@@ -35,7 +35,7 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 	// init hostsFileLines buffer
 	hostsFileLines := make([]HostsFileLine, len(fileLines))
 
-	// trim leading an trailing whitespace
+	// iterate file lines
 	for idx, line := range fileLines {
 		// get a pointer from the buffer, based on line index
 		curLine := &hostsFileLines[idx]
@@ -43,11 +43,11 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 		// save index
 		curLine.Number = idx
 
-		// save a raw version of the line, as it is from the input
-		curLine.Raw = line
-
 		// trim line (remove spaces after and before)
 		rawLine := strings.TrimSpace(line)
+
+		// save a raw version of the line, after only TrimSpace sanitization
+		curLine.Raw = rawLine
 
 		// check if it's an empty line
 		if rawLine == "" {
@@ -63,6 +63,9 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 			hashCounter := 0
 			for !strings.HasPrefix(rawLine, "#") {
 				rawLine = strings.TrimPrefix(rawLine, "#")
+				// also trim spaces to avoid "# #" situations
+				rawLine = strings.TrimSpace(rawLine)
+				// increment hash counter
 				hashCounter++
 			}
 
@@ -89,6 +92,8 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 				// since there can be more than one hash, remove those in excess
 				for !strings.HasPrefix(rawLine, "#") {
 					comment = strings.TrimPrefix(comment, "#")
+					// also trim spaces to avoid "# #" situations
+					rawLine = strings.TrimSpace(rawLine)
 				}
 
 				// save comment
