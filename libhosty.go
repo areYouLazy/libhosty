@@ -338,7 +338,7 @@ func (h *HostsFile) AddHostsFileLine(ipRaw, fqdnRaw, comment string) (int, *Host
 			}
 		}
 
-		//if we alredy have the address, just add the hostname to that line
+		//if we already have the address, just add the hostname to that line
 		for idx, hfl := range h.HostsFileLines {
 			if net.IP.Equal(hfl.Address, ip) {
 				h.Lock()
@@ -599,50 +599,4 @@ func (h *HostsFile) UncommentHostsFileLinesByRegexp(pattern string) {
 			}
 		}
 	}
-}
-
-// RenderHostsFile render and returns the hosts file with the lineFormatter() routine
-func (h *HostsFile) RenderHostsFile() string {
-	// allocate a buffer for file lines
-	var sliceBuffer []string
-
-	// iterate HostsFileLines and popolate the buffer with formatted lines
-	for _, l := range h.HostsFileLines {
-		sliceBuffer = append(sliceBuffer, lineFormatter(l))
-	}
-
-	// strings.Join() prevent the last line from being a new blank line
-	// as opposite to a for loop with fmt.Printf(buffer + '\n')
-	return strings.Join(sliceBuffer, "\n")
-}
-
-// RenderHostsFileLine render and returns the given hosts line with the lineFormatter() routine
-func (h *HostsFile) RenderHostsFileLine(row int) string {
-	// iterate to find the row to render
-	if len(h.HostsFileLines) > row {
-		return lineFormatter(h.HostsFileLines[row])
-	}
-
-	return ""
-}
-
-// SaveHostsFile write hosts file to configured path.
-// error is not nil if something goes wrong
-func (h *HostsFile) SaveHostsFile() error {
-	return h.SaveHostsFileAs(h.Path)
-}
-
-// SaveHostsFileAs write hosts file to the given path.
-// error is not nil if something goes wrong
-func (h *HostsFile) SaveHostsFileAs(path string) error {
-	// render the file as a byte slice
-	dataBytes := []byte(h.RenderHostsFile())
-
-	// write file to disk
-	err := os.WriteFile(path, dataBytes, 0644)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

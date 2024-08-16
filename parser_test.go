@@ -2,7 +2,6 @@ package libhosty
 
 import (
 	"fmt"
-	"runtime"
 	"strings"
 	"testing"
 )
@@ -16,39 +15,30 @@ var (
 		6.6.6.6		an.evil.domain
 		# 12.12.12.12	commented.evil.domain # with comments
 		# 2.3.4.5		first.domain second.domain third.domain
-		5.6.7.8		first.domain second.domain third.domain`
+		5.6.7.8		first.domain second.domain third.domain
+		5.6.7.8		a.domain b.domain c.domain`
 )
 
 // TestParseHostsFile implicitly tests parser()
 // assuming the test is executed on a computer,
 // we should be able to load the default hosts file
 func TestParseHostsFile(t *testing.T) {
-	var path string
-
 	// check for invalid path
-	path = "/my/custom/invalid/path/hosts"
-	_, err := ParseHostsFile(path)
+	path := "/my/custom/invalid/path/hosts"
+	_, err := Init(path)
 	if err == nil {
 		t.Fatalf("should fail with invalid path: %s", path)
 	}
 
-	// define file path
-	switch runtime.GOOS {
-	case "windows":
-		path = "C:\\Windows\\System32\\drivers\\etc\\hosts"
-	default:
-		path = "/etc/hosts"
-	}
-
 	// parse file
-	_, err = ParseHostsFile(path)
+	hf, err := Init("")
 	// check for errors
 	if err != nil {
 		t.Fatalf("error parsing hosts file: %s", err)
 	}
 
 	// load custom file for tests
-	hf, err := ParseHostsFileFromString(customHostsFile)
+	hf.HostsFileLines, err = ParseHostsFileFromString(customHostsFile)
 	if err != nil {
 		t.Fatalf("error parsing custom hosts file: %s", err)
 	}
@@ -68,7 +58,7 @@ func TestParseHostsFile(t *testing.T) {
 	// }
 
 	// for every  line,
-	for k, v := range hf {
+	for k, v := range hf.HostsFileLines {
 		// ensure addresses have a valid ip
 		if v.Type == LineTypeAddress {
 			if v.Address == nil {

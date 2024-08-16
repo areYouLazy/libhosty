@@ -25,6 +25,10 @@ func TestInit(t *testing.T) {
 	}
 }
 
+func TestGetHostsFileLines(t *testing.T) {
+	//TODO(areYouLazy): Test missing
+}
+
 func TestGetHostsFileLineByRow(t *testing.T) {
 	idx, _, _ := hf.AddHostsFileLine("9.9.9.9", "gethostsfilelinebyrow.libhosty.local", "")
 	hfl := hf.GetHostsFileLineByRow(idx)
@@ -81,31 +85,68 @@ func TestGetHostsFileLinesByHostname(t *testing.T) {
 			t.Fatalf("error: missing localhost in hostnames: %s", hfl.Hostnames)
 		}
 	}
-
 }
 
-func TestAddCommentFileLine(t *testing.T) {
-	hf.AddCommentFileLine("comment")
-
-	hfl := hf.HostsFileLines[len(hf.HostsFileLines)-1]
-	if hfl.Type != LineTypeComment {
-		t.Fatalf("expecting comment line, found %q", hfl.Type)
-	}
-
-	if res := strings.Compare(hfl.Raw, "# comment"); res != 0 {
-		t.Fatalf("wants %q got %q", "# comment", hfl.Raw)
-	}
+func TestGetHostsFileLinesByRegexp(t *testing.T) {
+	//TODO(areYouLazy): Test missing
 }
 
-func TestAddEmptyFileLine(t *testing.T) {
-	idx, _, err := hf.AddEmptyFileLine()
+func TestRemoveHostsFileLineByRow(t *testing.T) {
+	//TODO(areYouLazy): Test missing
+}
+
+func TestRemoveHostsFileLinesByIP(t *testing.T) {
+	//TODO(areYouLazy): Test missing
+}
+
+func TestRemoveHostsFileLinesByAddress(t *testing.T) {
+	//TODO(areYouLazy): Test missing
+}
+
+func TestRemoveHostsFileLinesByHostname(t *testing.T) {
+	//TODO(areYouLazy): Test missing
+}
+
+func TestRemoveHostsFileLinesByRegexp(t *testing.T) {
+	//TODO(areYouLazy): Test missing
+}
+
+func TestLookupByHostname(t *testing.T) {
+	//TODO(areYouLazy): Test missing
+}
+
+func TestAddHostsFileLineRaw(t *testing.T) {
+	idx, _, err := hf.AddHostsFileLineRaw("4.4.4.4", "addhostraw.libhosty.local", "my comment")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	hfl := hf.HostsFileLines[idx]
-	if hfl.Type != LineTypeEmpty {
-		t.Fatalf("expecting empty line, found %q", hfl.Type)
+	if hfl.Type != LineTypeAddress {
+		t.Fatalf("expecting address line, found %q", hfl.Type)
+	}
+
+	if res := strings.Compare(hfl.Address.String(), "4.4.4.4"); res != 0 {
+		t.Fatalf("expecting %q, found %q", "4.4.4.4", hfl.Address.String())
+	}
+
+	r := false
+	for _, v := range hfl.Hostnames {
+		if res := strings.Compare(v, "addhostraw.libhosty.local"); res == 0 {
+			r = true
+		}
+	}
+	if !r {
+		t.Fatalf("mssing %q in hostnames: got %q", "addhostraw.libhosty.local", hfl.Hostnames)
+	}
+
+	if res := strings.Compare(hfl.Comment, "my comment"); res != 0 {
+		t.Fatalf("expecting %q, found %q", "my comment", hfl.Comment)
+	}
+
+	idx, _, _ = hf.AddHostsFileLineRaw("fa.ke.i.p", "addhostraw.libhosty.local", "")
+	if idx != -1 {
+		t.Fatalf("wants %d got %d", -1, idx)
 	}
 }
 
@@ -154,38 +195,28 @@ func TestAddHostsFileLine(t *testing.T) {
 	}
 }
 
-func TestAddHostsFileLineRaw(t *testing.T) {
-	idx, _, err := hf.AddHostsFileLineRaw("4.4.4.4", "addhostraw.libhosty.local", "my comment")
+func TestAddCommentFileLine(t *testing.T) {
+	hf.AddCommentFileLine("comment")
+
+	hfl := hf.HostsFileLines[len(hf.HostsFileLines)-1]
+	if hfl.Type != LineTypeComment {
+		t.Fatalf("expecting comment line, found %q", hfl.Type)
+	}
+
+	if res := strings.Compare(hfl.Raw, "# comment"); res != 0 {
+		t.Fatalf("wants %q got %q", "# comment", hfl.Raw)
+	}
+}
+
+func TestAddEmptyFileLine(t *testing.T) {
+	idx, _, err := hf.AddEmptyFileLine()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	hfl := hf.HostsFileLines[idx]
-	if hfl.Type != LineTypeAddress {
-		t.Fatalf("expecting address line, found %q", hfl.Type)
-	}
-
-	if res := strings.Compare(hfl.Address.String(), "4.4.4.4"); res != 0 {
-		t.Fatalf("expecting %q, found %q", "4.4.4.4", hfl.Address.String())
-	}
-
-	r := false
-	for _, v := range hfl.Hostnames {
-		if res := strings.Compare(v, "addhostraw.libhosty.local"); res == 0 {
-			r = true
-		}
-	}
-	if !r {
-		t.Fatalf("mssing %q in hostnames: got %q", "addhostraw.libhosty.local", hfl.Hostnames)
-	}
-
-	if res := strings.Compare(hfl.Comment, "my comment"); res != 0 {
-		t.Fatalf("expecting %q, found %q", "my comment", hfl.Comment)
-	}
-
-	idx, _, _ = hf.AddHostsFileLineRaw("fa.ke.i.p", "addhostraw.libhosty.local", "")
-	if idx != -1 {
-		t.Fatalf("wants %d got %d", -1, idx)
+	if hfl.Type != LineTypeEmpty {
+		t.Fatalf("expecting empty line, found %q", hfl.Type)
 	}
 }
 
@@ -214,6 +245,22 @@ func TestCommentHostsFileLineByRow(t *testing.T) {
 	}
 }
 
+func TestCommentHostsFileLinesByIP(t *testing.T) {
+	//TODO(areYouLazy): Test missing
+}
+
+func TestCommentHostsFileLineByAddress(t *testing.T) {
+	//TODO(areYouLazy): Test missing
+}
+
+func TestCommentHostsFileLineByHostname(t *testing.T) {
+	//TODO(areYouLazy): Test missing
+}
+
+func TestCommentHostsFileLinesByRegexp(t *testing.T) {
+	//TODO(areYouLazy): Test missing
+}
+
 func TestUncommentHostsFileLinesByRow(t *testing.T) {
 	idx, _, err := hf.AddHostsFileLine("3.3.3.3", "commentbyrow.host.name", "")
 	if err != nil {
@@ -231,15 +278,7 @@ func TestUncommentHostsFileLinesByRow(t *testing.T) {
 	}
 }
 
-func TestCommentHostsFileLinesByIP(t *testing.T) {
-	//TODO(areYouLazy): Test missing
-}
-
 func TestUncommentHostsFileLineByIP(t *testing.T) {
-	//TODO(areYouLazy): Test missing
-}
-
-func TestCommentHostsFileLineByAddress(t *testing.T) {
 	//TODO(areYouLazy): Test missing
 }
 
@@ -247,10 +286,18 @@ func TestUncommentHostsFileLineByAddress(t *testing.T) {
 	//TODO(areYouLazy): Test missing
 }
 
-func TestCommentHostsFileLineByHostname(t *testing.T) {
+func TestUncommentHostsFileLineByHostname(t *testing.T) {
 	//TODO(areYouLazy): Test missing
 }
 
-func TestUncommentHostsFileLineByHostname(t *testing.T) {
+func TestUncommentHostsFileLinesByRegexp(t *testing.T) {
+	//TODO(areYouLazy): Test missing
+}
+
+func TestSaveHostsFile(t *testing.T) {
+	//TODO(areYouLazy): Test missing
+}
+
+func TestSaveHostsFileAs(t *testing.T) {
 	//TODO(areYouLazy): Test missing
 }
