@@ -154,6 +154,8 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 						// if more than 6 we need to generate 2 lines
 						// save first 6 hostnames to current line
 						// save other to new line
+
+						// get a new line (copy of currentLine, except for Hostnames and Raw)
 						newLine := HostsFileLine{
 							Type:        curLine.Type,
 							Address:     curLine.Address,
@@ -163,10 +165,16 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 							IsCommented: curLine.IsCommented,
 						}
 
+						// save first 6 hostnames
 						curLine.Hostnames = append(curLine.Hostnames, strings.ToLower(rawHostname[:6]))
+						// append current line
 						hostsFileLines = append(hostsFileLines, curLine)
 
+						// save other hostnames
 						newLine.Hostnames = append(newLine.Hostnames, rawHostname[6:])
+						// update Raw field
+						newLine.Raw = lineFormatter(newLine)
+						// append new line
 						hostsFileLines = append(hostsFileLines, newLine)
 					}
 				}
