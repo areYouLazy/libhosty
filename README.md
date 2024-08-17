@@ -60,12 +60,21 @@ package main
 import "github.com/areYouLazy/libhosty"
 
 func main() {
-    //you can initialize libhosty with a custom hosts file
-    //cnf, _ := libhosty.Init("/home/sonica/hosts-export.txt")
+    //you can initialize libhosty with a custom path
+    //
+    // cnf, _ := libhosty.InitFromCustomPath("/path/to/my/custom/hosts/file")
     
-    // an empty path will force libhosty to try to load
-    // the default hosts file based on runtime.GOOS
-    hfl, _ := libhosty.Init("")
+    // or you can parse an inline hosts file
+    //
+    // hfile := `# Example of an inline hosts file
+    // 127.0.0.1  localhost
+    // ::1        localhost
+    // 1.1.1.1    cloudflare.dns
+    // 8.8.8.8    google.dns`
+    // cnf, _ := libhosty.InitFromString(hfile)
+    
+    // load hosts file from default OS location
+    hfl, _ := libhosty.Init()
     
     //add an empty line
     hfl.AddEmptyFileLine()
