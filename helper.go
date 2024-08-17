@@ -1,25 +1,87 @@
 package libhosty
 
-//RestoreDefaultWindowsHostsFile loads the default windows hosts file
-func (h *HostsFile) RestoreDefaultWindowsHostsFile() {
-	hfl, _ := ParseHostsFileAsString(windowsHostsTemplate)
-	h.HostsFileLines = hfl
+import "runtime"
+
+// RestoreTemplate tries to restore the default hostsfile based on runtime.GOOS result
+// returns true if restore goes well
+func (h *HostsFile) RestoreTemplate() bool {
+	var hfl []HostsFileLine
+	// var err error
+
+	switch runtime.GOOS {
+	case "windows":
+		hfl, _ = ParseHostsFileFromString(windowsHostsTemplate)
+	case "docker":
+		hfl, _ = ParseHostsFileFromString(dockerDesktopTemplate)
+	case "linux|unix":
+		hfl, _ = ParseHostsFileFromString(linuxHostsTemplate)
+	case "darwin":
+		hfl, _ = ParseHostsFileFromString(darwinHostsTemplate)
+	default:
+		// hfl = nil
+		hfl, _ = ParseHostsFileFromString(linuxHostsTemplate)
+	}
+
+	if hfl != nil {
+		h.HostsFileLines = hfl
+		return true
+	}
+
+	return false
 }
 
-//RestoreDefaultLinuxHostsFile loads the default linux hosts file
-func (h *HostsFile) RestoreDefaultLinuxHostsFile() {
-	hfl, _ := ParseHostsFileAsString(linuxHostsTemplate)
-	h.HostsFileLines = hfl
+// RestoreNamedTemplate restored the named template as the current hostsfile
+// returns true if restore goes well
+func (h *HostsFile) RestoreNamedTemplate(template string) bool {
+	var hfl []HostsFileLine
+	// var err error
+
+	switch template {
+	case "windows":
+		hfl, _ = ParseHostsFileFromString(windowsHostsTemplate)
+	case "docker":
+		hfl, _ = ParseHostsFileFromString(dockerDesktopTemplate)
+	case "linux|unix":
+		hfl, _ = ParseHostsFileFromString(linuxHostsTemplate)
+	case "darwin":
+		hfl, _ = ParseHostsFileFromString(darwinHostsTemplate)
+	default:
+		// hfl = nil
+		hfl, _ = ParseHostsFileFromString(linuxHostsTemplate)
+	}
+
+	if hfl != nil {
+		h.HostsFileLines = hfl
+		return true
+	}
+
+	return false
 }
 
-//RestoreDefaultDarwinHostsFile loads the default darwin hosts file
-func (h *HostsFile) RestoreDefaultDarwinHostsFile() {
-	hfl, _ := ParseHostsFileAsString(darwinHostsTemplate)
-	h.HostsFileLines = hfl
-}
+// AppendNamedTemplate appends the named template to the current hostsfile
+// returns true if restore goes well
+func (h *HostsFile) AppendNamedTemplate(template string) bool {
+	var hfl []HostsFileLine
+	// var err error
 
-//AddDockerDesktopTemplate adds the dockerDesktopTemplate to the actual hostsFile
-func (h *HostsFile) AddDockerDesktopTemplate() {
-	hfl, _ := ParseHostsFileAsString(dockerDesktopTemplate)
-	h.HostsFileLines = append(h.HostsFileLines, hfl...)
+	switch template {
+	case "windows":
+		hfl, _ = ParseHostsFileFromString(windowsHostsTemplate)
+	case "docker":
+		hfl, _ = ParseHostsFileFromString(dockerDesktopTemplate)
+	case "linux|unix":
+		hfl, _ = ParseHostsFileFromString(linuxHostsTemplate)
+	case "darwin":
+		hfl, _ = ParseHostsFileFromString(darwinHostsTemplate)
+	default:
+		// hfl = nil
+		hfl, _ = ParseHostsFileFromString(linuxHostsTemplate)
+	}
+
+	if hfl != nil {
+		h.HostsFileLines = append(h.HostsFileLines, hfl...)
+		return true
+	}
+
+	return false
 }
