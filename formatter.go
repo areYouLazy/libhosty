@@ -7,12 +7,22 @@ import (
 
 // lineFormatter return a readable form for the given HostsFileLine object
 func lineFormatter(hfl HostsFileLine) string {
-
-	// returns raw if we don't need to edit the line
-	// this is for UNKNOWN, EMPTY and COMMENT linetypes
-	if hfl.Type < LineTypeAddress {
+	// returns raw for UNKNOWN linetype
+	if hfl.Type == LineTypeUnknown {
 		return hfl.Raw
 	}
+
+	// returns empty for EMPTY linetype
+	if hfl.Type == LineTypeEmpty {
+		return ""
+	}
+
+	// return a well formatted comment for COMEMNT linetype
+	if hfl.Type == LineTypeComment {
+		return fmt.Sprintf("# %s", hfl.Comment)
+	}
+
+	// address lines
 
 	// check if it's a commented line
 	if hfl.IsCommented {

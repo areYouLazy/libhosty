@@ -8,17 +8,20 @@
 
 ## Description
 
-libhosty is a pure golang library to manipulate the hosts file. It is inspired by [txeh](https://github.com/txn2/txeh), with some enrichments.
+libhosty is a pure golang library to manipulate hosts-like files. It is inspired by [txeh](https://github.com/txn2/txeh), with some enrichments.
 
 ## Table of Contents
 
-* [Main Features](#Main-Features)
-* [Installation](#Installation)
-* [Usage](#Usage)
-* [Contributing](#Contributing)
-  * [Templates](#Templates)
-* [Credits](#Credits)
-* [License](#License)
+- [Description](#description)
+- [Table of Contents](#table-of-contents)
+- [Main Features](#main-features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+  - [Templates](#templates)
+- [Credits](#credits)
+- [License](#license)
 
 ## Main Features
 
@@ -30,13 +33,17 @@ libhosty is a pure golang library to manipulate the hosts file. It is inspired b
 * Query by hostname
 * Automatically handles duplicate entries
 
+## Requirements
+
+Requires go >= 1.21
+
 ## Installation
 
 Ensure you have go on your system
 
 ```bash
 > go version
-go version go1.15.6 linux/amd64
+go version go1.22.5 linux/amd64
 ```
 
 and pull the library
@@ -49,7 +56,11 @@ and pull the library
 
 To use the library, just import it and call the `Init()` method.
 
-Note: This code doesn't handle errors for readability purposes, but you SHOULD!
+To load a custom hosts file use the `InitFromCustomPath(path string)` routine
+
+To parse an inline hosts file use the `InitFromString(lines string)` routine
+
+> Note: This code doesn't handle errors for readability purposes, but you SHOULD!
 
 ```go
 package main
@@ -57,14 +68,20 @@ package main
 import "github.com/areYouLazy/libhosty"
 
 func main() {
-    //you can define a custom config object
-    // and use it to initialize libhosty with a custom hosts file
+    //you can initialize libhosty with a custom path
     //
-    //cnf, _ := libhosty.NewHostsFileConfig("/home/sonica/hosts-export.txt")
-    //hfl, _ := libhosty.InitWithConfig(cnf)
+    // cnf, _ := libhosty.InitFromCustomPath("/path/to/my/custom/hosts/file")
     
-    //or initialize libhosty that will automatically try to loads
-    // then default hosts file for your OS
+    // or you can parse an inline hosts file
+    //
+    // hfile := `# Example of an inline hosts file
+    // 127.0.0.1  localhost
+    // ::1        localhost
+    // 1.1.1.1    cloudflare.dns
+    // 8.8.8.8    google.dns`
+    // cnf, _ := libhosty.InitFromString(hfile)
+    
+    // load hosts file from default OS location
     hfl, _ := libhosty.Init()
     
     //add an empty line
@@ -91,36 +108,35 @@ func main() {
     // Comment the line with address 12.12.12.12
     //
     // By-Row-Number
-    idx, _ := hfl.GetHostsFileLineByHostname("second.host.name")
     hfl.CommentHostsFileLineByRow(idx)
     //
     // By-Hostname
-    hfl.CommentHostsFileLineByHostname("second.host.name")
+    hfl.CommentHostsFileLinesByHostname("second.host.name")
     //
     // By-Address-As-IP
     ip := net.ParseIP("12.12.12.12")
-    hfl.CommentHostsFileLineByIP(ip)
+    hfl.CommentHostsFileLinesByIP(ip)
     //
     // By-Address-As-String
-    hfl.CommentHostsFileLineByAddress("12.12.12.12")
+    hfl.CommentHostsFileLinesByAddress("12.12.12.12")
     
     // render the hosts file
     fmt.Println(hfl.RenderHostsFile())
     
     // write file to disk
-    hfl.SaveHostsFile()
+    hfl.WriteHostsFile()
     
     // or to a custom location
-    hfl.SaveHostsFileAs("/home/sonica/hosts-export.txt")
+    hfl.WriteHostsFileTo("/home/sonica/hosts-export.txt")
     
-    // restore the original hosts file for linux
-    hfl.RestoreDefaultLinuxHostsFile()
+    // restore the original hosts file based on running OS
+    hfl.RestoreTemplate()
     
     // render the hosts file
     fmt.Println(hfl.RenderHostsFile())
     
     // write to disk
-    hfl.SaveHostsFile()
+    hfl.WriteHostsFile()
 }
 ```
 
@@ -138,7 +154,7 @@ The 1st `fmt.Println()` should output something like this (in a linux host)
 13.13.13.13             another.host.name
 ```
 
-While the 2nd `fmt.Println()` should output the default template for linux systems
+While the 2nd `fmt.Println()` should output the default template for your OS
 
 ```console
 # Do not remove the following line, or various programs
@@ -156,7 +172,7 @@ Issues and PRs are more than welcome!
 
 ### Templates
 
-If you find a hosts template (like the Docker one) that you think can be useful to have in this library feel free to open a Pull Request
+If you find a hosts template (like the Docker one) that you think can be useful to have in this library feel free to open an Issue/Pull Request
 
 ## Credits
 
