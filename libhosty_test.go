@@ -11,7 +11,7 @@ var hf *HostsFile
 func TestInit(t *testing.T) {
 	var err error
 
-	hf, err = Init("")
+	hf, err = Init()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -23,6 +23,14 @@ func TestInit(t *testing.T) {
 	if len(hf.HostsFileLines) <= 0 {
 		t.Fatalf("we should have at least 1 line")
 	}
+}
+
+func TestInitFromCustomPath(t *testing.T) {
+	//TODO(areYouLazy): Test missing
+}
+
+func TestInitFromString(t *testing.T) {
+	//TODO(areYouLazy): Test missing
 }
 
 func TestGetHostsFileLines(t *testing.T) {

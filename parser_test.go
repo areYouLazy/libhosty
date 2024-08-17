@@ -25,13 +25,13 @@ var (
 func TestParseHostsFile(t *testing.T) {
 	// check for invalid path
 	path := "/my/custom/invalid/path/hosts"
-	_, err := Init(path)
+	_, err := InitFromCustomPath(path)
 	if err == nil {
 		t.Fatalf("should fail with invalid path: %s", path)
 	}
 
 	// parse file
-	hf, err := Init("")
+	hf, err := Init()
 	// check for errors
 	if err != nil {
 		t.Fatalf("error parsing hosts file: %s", err)

@@ -3,7 +3,6 @@ package libhosty
 
 import (
 	"net"
-	"os"
 	"regexp"
 	"strings"
 	"sync"
@@ -78,39 +77,60 @@ type HostsFile struct {
 }
 
 // Init returns a new instance of a hostsfile.
-func Init(path string) (*HostsFile, error) {
-	var hostsFileLines []HostsFileLine
-	var err error
+func Init() (*HostsFile, error) {
+	// get hosts file default path
+	fpath := GetOSHostsFilePath()
 
-	// use custom path if provided
-	// if not, check for glibc env variable
-	// if not, go with the default file path
-	if path != "" {
-		hostsFileLines, err = ParseHostsFile(path)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		// check if we have the glibc HOSTALIASES env variable defined
-		fpath := os.Getenv("HOSTALIASES")
-		if fpath != "" {
-			hostsFileLines, err = ParseHostsFile(fpath)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			// fallback to default location
-			hostsFileLines, err = ParseHostsFile(GetOSHostsFilePath())
-			if err != nil {
-				return nil, err
-			}
-		}
+	// parse hosts file from default path
+	hostsFileLines, err := ParseHostsFile(fpath)
+	if err != nil {
+		return nil, err
+	}
+
+	// allocate a new HostsFile object
+	hf := &HostsFile{
+		// use default configuration
+		Path: fpath,
+
+		// allocate a new slice of HostsFileLine objects
+		HostsFileLines: hostsFileLines,
+	}
+
+	//return HostsFile
+	return hf, nil
+}
+
+func InitFromCustomPath(path string) (*HostsFile, error) {
+	// parse hosts file from default path
+	hostsFileLines, err := ParseHostsFile(path)
+	if err != nil {
+		return nil, err
 	}
 
 	// allocate a new HostsFile object
 	hf := &HostsFile{
 		// use default configuration
 		Path: path,
+
+		// allocate a new slice of HostsFileLine objects
+		HostsFileLines: hostsFileLines,
+	}
+
+	//return HostsFile
+	return hf, nil
+}
+
+func InitFromString(lines string) (*HostsFile, error) {
+	// parse inline hosts file
+	hostsFileLines, err := ParseHostsFileFromString(lines)
+	if err != nil {
+		return nil, err
+	}
+
+	// allocate a new HostsFile object
+	hf := &HostsFile{
+		// use default configuration
+		Path: "",
 
 		// allocate a new slice of HostsFileLine objects
 		HostsFileLines: hostsFileLines,
