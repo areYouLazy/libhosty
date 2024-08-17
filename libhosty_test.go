@@ -159,7 +159,7 @@ func TestAddHostsFileLineRaw(t *testing.T) {
 }
 
 func TestAddHostsFileLine(t *testing.T) {
-	idx, _, err := hf.AddHostsFileLine("5.5.5.5", "addhost.libhosty.local", "my comment")
+	idx, _, err := hf.AddHostsFileLine("5.5.5.5", "1.libhosty.local", "my comment")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -175,12 +175,12 @@ func TestAddHostsFileLine(t *testing.T) {
 
 	r := false
 	for _, v := range hfl.Hostnames {
-		if res := strings.Compare(v, "addhost.libhosty.local"); res == 0 {
+		if res := strings.Compare(v, "1.libhosty.local"); res == 0 {
 			r = true
 		}
 	}
 	if !r {
-		t.Fatalf("mssing %q in hostnames: got %q", "addhost.libhosty.local", hfl.Hostnames)
+		t.Fatalf("mssing %q in hostnames: got %q", "1.libhosty.local", hfl.Hostnames)
 	}
 
 	if res := strings.Compare(hfl.Comment, "my comment"); res != 0 {
@@ -201,6 +201,14 @@ func TestAddHostsFileLine(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// add more than 6 hostnames
+	hf.AddHostsFileLine("5.5.5.5", "2.libhosty.local", "")
+	hf.AddHostsFileLine("5.5.5.5", "3.libhosty.local", "")
+	hf.AddHostsFileLine("5.5.5.5", "4.libhosty.local", "")
+	hf.AddHostsFileLine("5.5.5.5", "5.libhosty.local", "")
+	hf.AddHostsFileLine("5.5.5.5", "6.libhosty.local", "")
+	hf.AddHostsFileLine("5.5.5.5", "7.libhosty.local", "")
 }
 
 func TestAddCommentFileLine(t *testing.T) {

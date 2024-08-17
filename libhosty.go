@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -35,6 +37,19 @@ const (
 	//LineTypeAddress defines address lines (actual hosts lines)
 	LineTypeAddress LineType = 30
 )
+
+func (lt LineType) String() string {
+	switch lt {
+	case LineTypeEmpty:
+		return "line-type-empty"
+	case LineTypeComment:
+		return "line-type-comment"
+	case LineTypeAddress:
+		return "line-type-address"
+	default:
+		return "line-type-unknown"
+	}
+}
 
 // HostsFileLine holds hosts file lines data
 type HostsFileLine struct {
@@ -288,10 +303,13 @@ func (h *HostsFile) AddHostsFileLineRaw(ipRaw, fqdnRaw, comment string) (int, *H
 	// parse ip to net.IP
 	ip := net.ParseIP(ipRaw)
 
+	idx := len(h.HostsFileLines)
+
 	// if we have a valid IP
 	if ip != nil {
 		// create a new hosts line
 		hfl := HostsFileLine{
+			Number:      idx,
 			Type:        LineTypeAddress,
 			Address:     ip,
 			Hostnames:   []string{hostname},
@@ -301,9 +319,6 @@ func (h *HostsFile) AddHostsFileLineRaw(ipRaw, fqdnRaw, comment string) (int, *H
 
 		// append to hosts
 		h.HostsFileLines = append(h.HostsFileLines, hfl)
-
-		// get index
-		idx := len(h.HostsFileLines) - 1
 
 		// return created entry
 		return idx, &h.HostsFileLines[idx], nil
@@ -324,9 +339,9 @@ func (h *HostsFile) AddHostsFileLine(ipRaw, fqdnRaw, comment string) (int, *Host
 
 	// if we have a valid IP
 	if ip != nil {
-		//check if we alredy have the fqdn
+		// check if we alredy have the fqdn
 		if idx, addr, err := h.LookupByHostname(hostname); err == nil {
-			//if actual ip is the same as the given one, we are done
+			// if actual ip is the same as the given one, we are done
 			if net.IP.Equal(addr, ip) {
 				// handle comment
 				if comment != "" {
@@ -336,26 +351,42 @@ func (h *HostsFile) AddHostsFileLine(ipRaw, fqdnRaw, comment string) (int, *Host
 				return idx, &h.HostsFileLines[idx], nil
 			}
 
-			//if address is different, we need to remove the hostname from the previous entry
+			// if address is different, we need to remove the hostname from the previous entry
 			for hostIdx, hn := range h.HostsFileLines[idx].Hostnames {
+				// if hostnames matches
 				if hn == hostname {
+					// remove hostname if there's at least one another hostname
 					if len(h.HostsFileLines[idx].Hostnames) > 1 {
 						h.Lock()
 						h.HostsFileLines[idx].Hostnames = append(h.HostsFileLines[idx].Hostnames[:hostIdx], h.HostsFileLines[idx].Hostnames[hostIdx+1:]...)
 						h.Unlock()
-					}
-
-					//remove the line if there are no more hostnames (other than the actual one)
-					if len(h.HostsFileLines[idx].Hostnames) <= 1 {
+					} else {
+						// remove the whole line
 						h.RemoveHostsFileLineByRow(idx)
 					}
 				}
 			}
 		}
 
-		//if we already have the address, just add the hostname to that line
+		// index saves the last matching index for the next for loop
+		// in this way, if we find a matching line (same IP)
+		// but needs to create a new line (hostname limit exceeded)
+		// it would be nice to place the new line next to the existing one
+		index := -1
+
+		// we don't have the fqdn
+		// if we already have the address, just add the hostname to that line
 		for idx, hfl := range h.HostsFileLines {
 			if net.IP.Equal(hfl.Address, ip) {
+				// if we already have 6 hostnames, just continue
+				// we'll either find another matching line
+				// or we'll end up creating a new line
+				if len(h.HostsFileLines[idx].Hostnames) >= 6 {
+					// save index
+					index = idx
+					continue
+				}
+
 				h.Lock()
 				h.HostsFileLines[idx].Hostnames = append(h.HostsFileLines[idx].Hostnames, hostname)
 				h.Unlock()
@@ -371,8 +402,14 @@ func (h *HostsFile) AddHostsFileLine(ipRaw, fqdnRaw, comment string) (int, *Host
 			}
 		}
 
-		// get index
-		idx := len(h.HostsFileLines)
+		var idx int
+		// we found a matching line
+		if index != -1 {
+			// so set the index next to the matching line
+			idx = index + 1
+		} else {
+			idx = len(h.HostsFileLines)
+		}
 
 		// at this point we need to create new host line
 		hfl := HostsFileLine{
@@ -388,8 +425,14 @@ func (h *HostsFile) AddHostsFileLine(ipRaw, fqdnRaw, comment string) (int, *Host
 		// generate raw version of the line
 		hfl.Raw = lineFormatter(hfl)
 
-		// append to hosts
-		h.HostsFileLines = append(h.HostsFileLines, hfl)
+		// if we found a matching line (index != -1)
+		// append the new line after the matched one
+		if index != -1 {
+			h.HostsFileLines = slices.Insert(h.HostsFileLines, idx, hfl)
+		} else {
+			// else append to hosts
+			h.HostsFileLines = append(h.HostsFileLines, hfl)
+		}
 
 		// return created entry
 		return idx, &h.HostsFileLines[idx], nil

@@ -1,7 +1,6 @@
 package libhosty
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 )
@@ -69,7 +68,6 @@ func TestParseHostsFile(t *testing.T) {
 		// ensure comments starts with #
 		if v.Type == LineTypeComment {
 			if !strings.HasPrefix(v.Raw, "#") {
-				fmt.Println(v.Raw)
 				t.Fatalf("comment line does not starts with # at index %d: %v", k, v)
 			}
 		}
@@ -97,7 +95,6 @@ func TestParseHostsFileFromString(t *testing.T) {
 		// ensure comments starts with #
 		if v.Type == LineTypeComment {
 			if !strings.HasPrefix(v.Raw, "#") {
-				fmt.Println(v.Raw)
 				t.Fatalf("comment line does not starts with # at index %d: %v", k, v)
 			}
 		}
