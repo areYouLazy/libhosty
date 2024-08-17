@@ -33,15 +33,19 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 	fileLines := strings.Split(byteDataNormalized, "\n")
 
 	// init hostsFileLines buffer
-	hostsFileLines := make([]HostsFileLine, len(fileLines))
+	hostsFileLines := make([]HostsFileLine, 0)
 
 	// iterate file lines
-	for idx, line := range fileLines {
-		// get a pointer from the buffer, based on line index
-		curLine := &hostsFileLines[idx]
-
-		// save index
-		curLine.Number = idx
+	for _, line := range fileLines {
+		// instantiate a new HostsFileLine
+		curLine := HostsFileLine{
+			Type:        0,
+			Address:     []byte{},
+			Hostnames:   []string{},
+			Raw:         "",
+			Comment:     "",
+			IsCommented: false,
+		}
 
 		// trim line (remove spaces after and before)
 		rawLine := strings.TrimSpace(line)
@@ -52,6 +56,7 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 		// check if it's an empty line
 		if rawLine == "" {
 			curLine.Type = LineTypeEmpty
+			hostsFileLines = append(hostsFileLines, curLine)
 			continue
 		}
 
@@ -78,6 +83,7 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 			// nothing except hashes, comment line
 			if len(rawLineParts) == 0 {
 				curLine.Type = LineTypeComment
+				hostsFileLines = append(hostsFileLines, curLine)
 				continue
 			}
 
@@ -98,6 +104,7 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 
 				// save comment
 				curLine.Comment = comment
+				hostsFileLines = append(hostsFileLines, curLine)
 				continue
 			}
 
@@ -138,10 +145,30 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 					// sanitize hostname
 					rawHostname := strings.TrimSpace(hostname)
 
-					// add hostname to hostnames slice
-					curLine.Hostnames = append(curLine.Hostnames, strings.ToLower(rawHostname))
+					// if there are 6 or less hostnames, just proceede
+					if len(rawHostname) <= 6 {
+						// add hostname to hostnames slice
+						curLine.Hostnames = append(curLine.Hostnames, strings.ToLower(rawHostname))
+						hostsFileLines = append(hostsFileLines, curLine)
+					} else {
+						// if more than 6 we need to generate 2 lines
+						// save first 6 hostnames to current line
+						// save other to new line
+						newLine := HostsFileLine{
+							Type:        curLine.Type,
+							Address:     curLine.Address,
+							Hostnames:   make([]string, 0),
+							Raw:         "",
+							Comment:     curLine.Comment,
+							IsCommented: curLine.IsCommented,
+						}
 
-					//TODO(areYouLazy): Handle if more than 6 hostnames
+						curLine.Hostnames = append(curLine.Hostnames, strings.ToLower(rawHostname[:6]))
+						hostsFileLines = append(hostsFileLines, curLine)
+
+						newLine.Hostnames = append(newLine.Hostnames, rawHostname[6:])
+						hostsFileLines = append(hostsFileLines, newLine)
+					}
 				}
 
 				// we got a line, go on to the next one

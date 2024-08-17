@@ -40,9 +40,6 @@ func TestGetHostsFileLines(t *testing.T) {
 func TestGetHostsFileLineByRow(t *testing.T) {
 	idx, _, _ := hf.AddHostsFileLine("9.9.9.9", "gethostsfilelinebyrow.libhosty.local", "")
 	hfl := hf.GetHostsFileLineByRow(idx)
-	if hfl.Number != idx {
-		t.Fatalf("error: wants %d got %d", idx, hfl.Number)
-	}
 
 	if len(hfl.Hostnames) > 1 {
 		t.Fatalf("error: wants %d got %d", 1, len(hfl.Hostnames))

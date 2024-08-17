@@ -53,9 +53,6 @@ func (lt LineType) String() string {
 
 // HostsFileLine holds hosts file lines data
 type HostsFileLine struct {
-	//Number is the original line number
-	Number int
-
 	//LineType defines the line type
 	Type LineType
 
@@ -208,15 +205,15 @@ func (h *HostsFile) GetHostsFileLinesByHostname(hostname string) []*HostsFileLin
 }
 
 // GetHostsFileLinesByRegexp returns every line that maches a given regexp
-func (h *HostsFile) GetHostsFileLinesByRegexp(pattern string) []*HostsFileLine {
-	hfl := make([]*HostsFileLine, 0)
+func (h *HostsFile) GetHostsFileLinesByRegexp(pattern string) []HostsFileLine {
+	hfl := make([]HostsFileLine, 0)
 
 	reg := regexp.MustCompile(pattern)
 
 	for idx := range h.HostsFileLines {
 		for _, hn := range h.HostsFileLines[idx].Hostnames {
 			if reg.MatchString(hn) {
-				hfl = append(hfl, &h.HostsFileLines[idx])
+				hfl = append(hfl, h.HostsFileLines[idx])
 				continue
 			}
 		}
@@ -303,13 +300,13 @@ func (h *HostsFile) AddHostsFileLineRaw(ipRaw, fqdnRaw, comment string) (int, *H
 	// parse ip to net.IP
 	ip := net.ParseIP(ipRaw)
 
+	// get index
 	idx := len(h.HostsFileLines)
 
 	// if we have a valid IP
 	if ip != nil {
 		// create a new hosts line
 		hfl := HostsFileLine{
-			Number:      idx,
 			Type:        LineTypeAddress,
 			Address:     ip,
 			Hostnames:   []string{hostname},
@@ -321,7 +318,7 @@ func (h *HostsFile) AddHostsFileLineRaw(ipRaw, fqdnRaw, comment string) (int, *H
 		h.HostsFileLines = append(h.HostsFileLines, hfl)
 
 		// return created entry
-		return idx, &h.HostsFileLines[idx], nil
+		return idx, &hfl, nil
 	}
 
 	// return error
@@ -413,7 +410,6 @@ func (h *HostsFile) AddHostsFileLine(ipRaw, fqdnRaw, comment string) (int, *Host
 
 		// at this point we need to create new host line
 		hfl := HostsFileLine{
-			Number:      idx,
 			Type:        LineTypeAddress,
 			Address:     ip,
 			Hostnames:   []string{hostname},
@@ -452,7 +448,6 @@ func (h *HostsFile) AddCommentFileLine(comment string) (int, *HostsFileLine, err
 	idx := len(h.HostsFileLines)
 
 	hfl := HostsFileLine{
-		Number:      idx,
 		Type:        LineTypeComment,
 		Address:     []byte{},
 		Hostnames:   []string{},
@@ -477,7 +472,6 @@ func (h *HostsFile) AddEmptyFileLine() (int, *HostsFileLine, error) {
 	idx := len(h.HostsFileLines)
 
 	hfl := HostsFileLine{
-		Number:      idx,
 		Type:        LineTypeEmpty,
 		Address:     []byte{},
 		Hostnames:   []string{},
