@@ -49,10 +49,13 @@ and pull the library
 
 ## Usage
 
-To use the library, just import it and call the `Init(path string)` method.
-If `path` is empty, libhosty relies on the `runtime.GOOS` result to load OS default hosts file
+To use the library, just import it and call the `Init()` method.
 
-Note: This code doesn't handle errors for readability purposes, but you SHOULD!
+To load a custom hosts file use the `InitFromCustomPath(path string)` routine
+
+To parse an inline hosts file use the `InitFromString(lines string)` routine
+
+> Note: This code doesn't handle errors for readability purposes, but you SHOULD!
 
 ```go
 package main
