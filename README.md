@@ -8,13 +8,14 @@
 
 ## Description
 
-libhosty is a pure golang library to manipulate the hosts file. It is inspired by [txeh](https://github.com/txn2/txeh), with some enrichments.
+libhosty is a pure golang library to manipulate hosts-like files. It is inspired by [txeh](https://github.com/txn2/txeh), with some enrichments.
 
 ## Table of Contents
 
 - [Description](#description)
 - [Table of Contents](#table-of-contents)
 - [Main Features](#main-features)
+- [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Contributing](#contributing)
@@ -32,13 +33,17 @@ libhosty is a pure golang library to manipulate the hosts file. It is inspired b
 * Query by hostname
 * Automatically handles duplicate entries
 
+## Requirements
+
+Requires go >= 1.21
+
 ## Installation
 
 Ensure you have go on your system
 
 ```bash
 > go version
-go version go1.15.6 linux/amd64
+go version go1.22.5 linux/amd64
 ```
 
 and pull the library
@@ -119,7 +124,7 @@ func main() {
     fmt.Println(hfl.RenderHostsFile())
     
     // write file to disk
-    hfl.SaveHostsFile()
+    hfl.WriteHostsFile()
     
     // or to a custom location
     hfl.WriteHostsFileTo("/home/sonica/hosts-export.txt")
@@ -167,7 +172,7 @@ Issues and PRs are more than welcome!
 
 ### Templates
 
-If you find a hosts template (like the Docker one) that you think can be useful to have in this library feel free to open a Pull Request
+If you find a hosts template (like the Docker one) that you think can be useful to have in this library feel free to open an Issue/Pull Request
 
 ## Credits
 
