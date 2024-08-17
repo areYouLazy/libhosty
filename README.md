@@ -103,18 +103,17 @@ func main() {
     // Comment the line with address 12.12.12.12
     //
     // By-Row-Number
-    idx, _ := hfl.GetHostsFileLineByHostname("second.host.name")
     hfl.CommentHostsFileLineByRow(idx)
     //
     // By-Hostname
-    hfl.CommentHostsFileLineByHostname("second.host.name")
+    hfl.CommentHostsFileLinesByHostname("second.host.name")
     //
     // By-Address-As-IP
     ip := net.ParseIP("12.12.12.12")
-    hfl.CommentHostsFileLineByIP(ip)
+    hfl.CommentHostsFileLinesByIP(ip)
     //
     // By-Address-As-String
-    hfl.CommentHostsFileLineByAddress("12.12.12.12")
+    hfl.CommentHostsFileLinesByAddress("12.12.12.12")
     
     // render the hosts file
     fmt.Println(hfl.RenderHostsFile())
@@ -123,16 +122,16 @@ func main() {
     hfl.SaveHostsFile()
     
     // or to a custom location
-    hfl.SaveHostsFileAs("/home/sonica/hosts-export.txt")
+    hfl.WriteHostsFileTo("/home/sonica/hosts-export.txt")
     
-    // restore the original hosts file for linux
-    hfl.RestoreDefaultLinuxHostsFile()
+    // restore the original hosts file based on running OS
+    hfl.RestoreTemplate()
     
     // render the hosts file
     fmt.Println(hfl.RenderHostsFile())
     
     // write to disk
-    hfl.SaveHostsFile()
+    hfl.WriteHostsFile()
 }
 ```
 
@@ -150,7 +149,7 @@ The 1st `fmt.Println()` should output something like this (in a linux host)
 13.13.13.13             another.host.name
 ```
 
-While the 2nd `fmt.Println()` should output the default template for linux systems
+While the 2nd `fmt.Println()` should output the default template for your OS
 
 ```console
 # Do not remove the following line, or various programs

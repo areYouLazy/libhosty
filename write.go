@@ -5,7 +5,7 @@ import "os"
 // WriteHostsFile write hosts file to configured path.
 // error is not nil if something goes wrong
 func (h *HostsFile) WriteHostsFile() error {
-	return h.SaveHostsFileAs(h.Path)
+	return h.WriteHostsFileTo(h.Path)
 }
 
 // WriteHostsFileTo write hosts file to the given path.
