@@ -1,11 +1,17 @@
 package libhosty
 
-import "os"
+import (
+	"os"
+)
 
 // WriteHostsFile write hosts file to configured path.
 // error is not nil if something goes wrong
 func (h *HostsFile) WriteHostsFile() error {
-	return h.WriteHostsFileTo(h.Path)
+	if h.Path != "" {
+		return h.WriteHostsFileTo(h.Path)
+	} else {
+		return ErrPathNotConfigured
+	}
 }
 
 // WriteHostsFileTo write hosts file to the given path.
