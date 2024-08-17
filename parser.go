@@ -140,6 +140,8 @@ func parser(bytesData []byte) ([]HostsFileLine, error) {
 
 					// add hostname to hostnames slice
 					curLine.Hostnames = append(curLine.Hostnames, strings.ToLower(rawHostname))
+
+					//TODO(areYouLazy): Handle if more than 6 hostnames
 				}
 
 				// we got a line, go on to the next one
