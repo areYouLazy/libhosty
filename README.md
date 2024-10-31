@@ -46,10 +46,10 @@ Ensure you have go on your system
 go version go1.22.5 linux/amd64
 ```
 
-and pull the library
+and pull the library (note that we are on v2 now)
 
 ```bash
-> go get github.com/areYouLazy/libhosty
+> go get github.com/areYouLazy/libhosty/v2
 ```
 
 ## Usage
