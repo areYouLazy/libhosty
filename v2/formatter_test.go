@@ -9,15 +9,12 @@ import (
 func TestLineFormatter(t *testing.T) {
 	// define custom hostsFileLine with IsCommented
 	hfl := HostsFileLine{
-		Number:      0,
 		Type:        30,
 		Address:     net.ParseIP("1.1.1.1"),
-		Parts:       []string{""},
 		Hostnames:   []string{"my.host.name"},
 		Raw:         "1.1.1.1 my.host.name # This is a host",
 		Comment:     "This is a host",
 		IsCommented: true,
-		trimed:      "1.1.1.1 my.host.name",
 	}
 
 	// invoke lineFormatter hosts file line
@@ -59,15 +56,12 @@ func TestLineFormatter(t *testing.T) {
 
 	// define a comment line
 	hfl = HostsFileLine{
-		Number:      0,
 		Type:        20,
 		Address:     []byte{},
-		Parts:       []string{},
 		Hostnames:   []string{},
 		Raw:         "# Comment Line",
-		Comment:     "",
+		Comment:     "Comment Line",
 		IsCommented: false,
-		trimed:      "",
 	}
 	w = "# Comment line"
 	l = lineFormatter(hfl)
